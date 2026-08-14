@@ -114,29 +114,41 @@ Xcode ni a la red del usuario. Eso descarta:
 Por eso el flujo real de prueba/uso es: el usuario corre el proyecto **desde su propio
 Mac** (con Xcode ya instalado), y usa **Expo Go** en su iPhone.
 
-### Publicación con EAS Update (en progreso)
+### Camino elegido: app nativa real vía Xcode (en progreso)
 
-Para que el usuario no dependa de tener el Mac prendido corriendo `npm start` cada vez
-que quiera usar la app, se está configurando **EAS Update**: el usuario publica el
-proyecto una vez a los servidores de Expo (gratis, requiere cuenta en expo.dev) y desde
-ahí puede abrirlo en Expo Go en cualquier momento sin servidor local corriendo — solo
-necesita internet en el teléfono.
+Se le explicaron al usuario las 3 opciones (1. Expo Go + servidor local, 2. Expo Go +
+EAS Update sin servidor local, 3. app nativa real con ícono propio sin pasar por Expo
+Go) — **eligió la opción 3**, ya que tiene Xcode instalado. Se descartó EAS Update como
+destino final (solo se había dejado `expo-updates` instalado como preparación de la
+opción 2, que ya no es el camino; no se ha quitado la dependencia porque no estorba).
 
-Esto requiere login interactivo (`eas login`) que **no se puede hacer desde una sesión
-de Claude Code remota** — debe correrlo el usuario en su Mac. Lo que sí se dejó listo
-desde el código:
-- `expo-updates` instalado como dependencia.
-- Falta correr en el Mac del usuario: `eas login`, `eas init`, `eas update:configure`,
-  y luego `eas update` para publicar cada vez que haya cambios nuevos.
+Se agregó `ios.bundleIdentifier: "com.jairoalejo456.controlfitnesspersonal"` en
+`app.json` — es obligatorio para compilar de forma nativa (Expo Go no lo necesita, por
+eso no estaba desde el inicio).
 
-Si en una sesión futura hay que retomar esto, revisar si el usuario ya corrió esos
-comandos (buscar `extra.eas.projectId` y el bloque `updates` en `app.json` — si ya
-existen, el proyecto ya está vinculado a EAS y solo falta seguir publicando).
+**Flujo que debe correr el usuario en su Mac** (no se puede hacer desde una sesión de
+Claude Code remota — requiere Xcode y el iPhone conectado por cable):
+```bash
+git pull origin claude/github-connection-tq25hr
+npm install
+npx expo prebuild --platform ios   # genera la carpeta ios/ (proyecto Xcode real)
+npx expo run:ios --device          # compila e instala directo en el iPhone conectado
+```
+En el primer `run:ios --device` es probable que Xcode pida iniciar sesión con el Apple
+ID del usuario (Xcode → Settings → Accounts) y elegir un "team" personal gratis para la
+firma de código. Con cuenta Apple gratis (sin pagar los $99/año), la app instalada
+expira a los 7 días y hay que repetir `expo run:ios --device` para renovarla — el
+usuario ya fue informado de esta limitación y la aceptó.
 
-**Camino futuro, si el usuario quiere una app "de verdad" con ícono propio (sin pasar
-por Expo Go)**: requiere EAS Build + instalación vía Xcode (gratis, pero expira cada 7
-días) o cuenta de desarrollador Apple de pago (~$99/año, vía TestFlight, dura todo el
-año). No se ha empezado — es una posible siguiente fase si el usuario lo pide.
+Si en una sesión futura hay que retomar esto: revisar si ya existe la carpeta `ios/`
+commiteada (normalmente NO se commitea, queda en `.gitignore` — ver si el usuario pidió
+lo contrario) y si el usuario reporta algún error específico de firma/certificados en
+Xcode, que es la parte más propensa a fricción de este flujo.
+
+**Si más adelante el usuario quiere evitar el re-instalado cada 7 días** sin pagar la
+cuenta de desarrollador: no hay atajo gratuito en iOS para eso — es una restricción de
+Apple, no de Expo. La alternativa sin pagar sería volver a EAS Update (opción 2, dentro
+de Expo Go) o pagar la cuenta de $99/año para distribución permanente vía TestFlight.
 
 ## Qué falta / posibles siguientes pasos
 
@@ -170,3 +182,13 @@ su propio Mac en su lugar.
 Se instaló `expo-updates` como paso preparatorio para configurar EAS Update (el usuario
 pidió no depender de tener el Mac prendido para usar la app). Falta que el usuario
 complete el login/configuración de EAS desde su Mac.
+
+### 2026-08-14 — Cambio de rumbo: app nativa real en vez de EAS Update
+El usuario se confundió sobre qué estábamos construyendo (pensó que ya estábamos
+armando la app nativa en Xcode). Se le explicaron las 3 opciones posibles con una
+tabla comparativa y, como ya tiene Xcode instalado, eligió ir directo por la app nativa
+real con ícono propio (opción 3), no EAS Update. Se agregó `ios.bundleIdentifier` a
+`app.json` (obligatorio para build nativo) y se le dieron los comandos
+(`expo prebuild --platform ios` + `expo run:ios --device`) para correr desde su Mac.
+Ver la sección "Camino elegido: app nativa real vía Xcode" más arriba para el detalle
+completo y qué revisar si se retoma esto en otra sesión.

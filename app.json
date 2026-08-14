@@ -10,7 +10,8 @@
     "backgroundColor": "#161826",
     "ios": {
       "icon": "./assets/images/icon.png",
-      "supportsTablet": false
+      "supportsTablet": false,
+      "bundleIdentifier": "com.jairoalejo456.controlfitnesspersonal"
     },
     "android": {
       "adaptiveIcon": {
