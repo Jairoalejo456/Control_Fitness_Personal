@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+body{margin:0;}
+@keyframes screenIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+@keyframes headerIn { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
+</style>
+</helmet>
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0b0c14;padding:48px 24px;font-family:'Inter',system-ui,sans-serif;box-sizing:border-box;">
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402,874">
+<div style="height:100%;display:flex;flex-direction:column;background:#161826;color:#e9e9ed;font-family:'Inter',system-ui,sans-serif;">
+
+<sc-if value="{{ showHeader }}" hint-placeholder-val="{{ true }}">
+<div style="padding:62px 20px 14px;flex:none;animation:headerIn 0.38s cubic-bezier(0.22,1,0.36,1);">
+  <sc-if value="{{ isHoy }}" hint-placeholder-val="{{ true }}">
+    <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#9184d9;margin-bottom:4px;">{{ weekLabel }} · {{ currentDay }}</div>
+    <div style="font-size:24px;font-weight:500;">Registro diario</div>
+    <div style="font-size:12px;color:rgba(233,233,237,0.55);margin-top:2px;">{{ todayDateLabel }} · Plan: {{ planToday }}</div>
+  </sc-if>
+  <sc-if value="{{ isEntrenamiento }}" hint-placeholder-val="{{ false }}">
+    <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#9184d9;margin-bottom:4px;">{{ weekLabel }} · {{ currentDay }}</div>
+    <div style="font-size:24px;font-weight:500;">Entrenamiento</div>
+    <div style="font-size:12px;color:rgba(233,233,237,0.55);margin-top:2px;">{{ planToday }}</div>
+  </sc-if>
+  <sc-if value="{{ isRutina }}" hint-placeholder-val="{{ false }}">
+    <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#9184d9;margin-bottom:4px;">Referencia</div>
+    <div style="font-size:24px;font-weight:500;">Rutina oficial</div>
+    <div style="font-size:12px;color:rgba(233,233,237,0.55);margin-top:2px;">Recomposición corporal · 16 semanas</div>
+  </sc-if>
+  <sc-if value="{{ isPanel }}" hint-placeholder-val="{{ false }}">
+    <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#9184d9;margin-bottom:4px;">Panel</div>
+    <div style="font-size:24px;font-weight:500;">Resumen semanal</div>
+    <div style="font-size:12px;color:rgba(233,233,237,0.55);margin-top:2px;">{{ weekActualLabel }}</div>
+  </sc-if>
+  <sc-if value="{{ isConfig }}" hint-placeholder-val="{{ false }}">
+    <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#9184d9;margin-bottom:4px;">Configuración</div>
+    <div style="font-size:24px;font-weight:500;">Datos del plan</div>
+    <div style="font-size:12px;color:rgba(233,233,237,0.55);margin-top:2px;">Inicio: {{ inicioPlanLabel }}</div>
+  </sc-if>
+  <sc-if value="{{ isManageExercises }}" hint-placeholder-val="{{ false }}">
+    <button onClick="{{ onCloseManageExercises }}" style="display:flex;align-items:center;gap:4px;cursor:pointer;background:transparent;border:none;color:#9184d9;font-size:13px;font-family:'Inter',system-ui,sans-serif;padding:0;margin-bottom:6px;">← Configuración</button>
+    <div style="font-size:24px;font-weight:500;">Administrar ejercicios</div>
+    <div style="font-size:12px;color:rgba(233,233,237,0.55);margin-top:2px;">Nombres, series recomendadas y orden</div>
+  </sc-if>
+</div>
+</sc-if>
+
+<div style="flex:1;overflow-y:auto;padding:0 20px 20px;">
+
+<sc-if value="{{ isOnboarding }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:14px;padding-top:56px;animation:screenIn 0.38s cubic-bezier(0.22,1,0.36,1);">
+  <div>
+    <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#9184d9;margin-bottom:4px;">Bienvenido</div>
+    <div style="font-size:22px;font-weight:500;">Configura tu plan</div>
+    <div style="font-size:12px;color:rgba(233,233,237,0.55);margin-top:4px;">Solo se pide una vez — podrás cambiarlo luego en Configuración.</div>
+  </div>
+
+  <div style="background:#232532;border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;">
+    <div style="font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:#9184d9;">Datos personales</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:13px;color:rgba(233,233,237,0.7);">Edad</span>
+      <input type="number" value="{{ cfgEdad }}" onChange="{{ onCfgEdad }}" style="width:64px;min-height:36px;padding:6px 8px;font-size:14px;color:#e9e9ed;background:#161826;border:1px solid rgba(233,233,237,0.16);border-radius:6px;text-align:right;box-sizing:border-box;">
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:13px;color:rgba(233,233,237,0.7);">Sexo</span>
+      <div style="display:inline-flex;overflow:hidden;border:1px solid rgba(233,233,237,0.16);border-radius:8px;">
+        <button onClick="{{ onCfgSexoHombre }}" style="padding:6px 12px;font-size:12px;cursor:pointer;background:{{ cfgSexoHombreBg }};border:none;color:{{ cfgSexoHombreColor }};">Hombre</button>
+        <button onClick="{{ onCfgSexoMujer }}" style="padding:6px 12px;font-size:12px;cursor:pointer;background:{{ cfgSexoMujerBg }};border:none;border-left:1px solid rgba(233,233,237,0.16);color:{{ cfgSexoMujerColor }};">Mujer</button>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:13px;color:rgba(233,233,237,0.7);">Estatura</span>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button onClick="{{ onCfgEstaturaDec }}" style="width:28px;height:28px;border-radius:6px;background:transparent;border:1px solid rgba(233,233,237,0.16);color:#e9e9ed;font-size:14px;cursor:pointer;transition:transform 0.08s ease-out;" style-active="transform:scale(0.85);">−</button>
+        <span style="font-size:14px;min-width:48px;text-align:center;">{{ cfgEstatura }} m</span>
+        <button onClick="{{ onCfgEstaturaInc }}" style="width:28px;height:28px;border-radius:6px;background:transparent;border:1px solid rgba(233,233,237,0.16);color:#e9e9ed;font-size:14px;cursor:pointer;transition:transform 0.08s ease-out;" style-active="transform:scale(0.85);">+</button>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:#232532;border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;">
+    <div style="font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:#9184d9;">Punto de partida</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:13px;color:rgba(233,233,237,0.7);">Peso inicial</span>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button onClick="{{ onCfgPesoInicialDec }}" style="width:28px;height:28px;border-radius:6px;background:transparent;border:1px solid rgba(233,233,237,0.16);color:#e9e9ed;font-size:14px;cursor:pointer;transition:transform 0.08s ease-out;" style-active="transform:scale(0.85);">−</button>
+        <span style="font-size:14px;min-width:64px;text-align:center;">{{ cfgPesoInicialLabel }}</span>
+        <button onClick="{{ onCfgPesoInicialInc }}" style="width:28px;height:28px;border-radius:6px;background:transparent;border:1px solid rgba(233,233,237,0.16);color:#e9e9ed;font-size:14px;cursor:pointer;transition:transform 0.08s ease-out;" style-active="transform:scale(0.85);">+</button>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:13px;color:rgba(233,233,237,0.7);">Cintura inicial</span>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button onClick="{{ onCfgCinturaInicialDec }}" style="width:28px;height:28px;border-radius:6px;background:transparent;border:1px solid rgba(233,233,237,0.16);color:#e9e9ed;font-size:14px;cursor:pointer;transition:transform 0.08s ease-out;" style-active="transform:scale(0.85);">−</button>
+        <span style="font-size:14px;min-width:64px;text-align:center;">{{ cfgCinturaInicialLabel }}</span>
+        <button onClick="{{ onCfgCinturaInicialInc }}" style="width:28px;height:28px;border-radius:6px;background:transparent;border:1px solid rgba(233,233,237,0.16);color:#e9e9ed;font-size:14px;cursor:pointer;transition:transform 0.08s ease-out;" style-active="transform:scale(0.85);">+</button>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:13px;color:rgba(233,233,237,0.7);">Inicio del plan</span>
+      <input type="date" value="{{ cfgInicioPlan }}" onChange="{{ onCfgInicioPlan }}" style="min-height:36px;padding:6px 8px;font-size:13px;font-family:'Inter',system-ui,sans-serif;color:#e9e9ed;background:#161826;border:1px solid rgba(233,233,237,0.16);border-radius:6px;box-sizing:border-box;">
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:13px;color:rgba(233,233,237,0.7);">Duración (semanas)</span>
+      <input type="number" value="{{ cfgDuracion }}" onChange="{{ onCfgDuracion }}" style="width:64px;min-height:36px;padding:6px 8px;font-size:14px;color:#e9e9ed;background:#161826;border:1px solid rgba(233,233,237,0.16);border-radius:6px;text-align:right;box-sizing:border-box;">
+    </div>
+  </div>
+
+  <div style="background:#232532;border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;">
+    <div style="font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:#9184d9;">Metas nutricionales y sueño</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:13px;color:rgba(233,233,237,0.7);">Calorías objetivo</span>
+      <input type="number" value="{{ cfgCalorias }}" onChange="{{ onCfgCalorias }}" style="width:72px;min-height:36px;padding:6px 8px;font-size:14px;color:#e9e9ed;background:#161826;border:1px solid rgba(233,233,237,0.16);border-radius:6px;text-align:right;box-sizing:border-box;">
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:13px;color:rgba(233,233,237,0.7);">Proteína mínima / ideal</span>
+      <div style="display:flex;gap:6px;">
+        <input type="number" value="{{ cfgProtMin }}" onChange="{{ onCfgProtMin }}" style="width:56px;min-height:36px;padding:6px 8px;font-size:14px;color:#e9e9ed;background:#161826;border:1px solid rgba(233,233,237,0.16);border-radius:6px;text-align:right;box-sizing:border-box;">
+        <input type="number" value="{{ cfgProtIdeal }}" onChange="{{ onCfgProtIdeal }}" style="width:56px;min-height:36px;padding:6px 8px;font-size:14px;color:#e9e9ed;background:#161826;border:1px solid rgba(233,233,237,0.16);border-radius:6px;text-align:right;box-sizing:border-box;">
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:13px;color:rgba(233,233,237,0.7);">Sueño ideal</span>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button onClick="{{ onCfgSuenoIdealDec }}" style="width:28px;height:28px;border-radius:6px;background:transparent;border:1px solid rgba(233,233,237,0.16);color:#e9e9ed;font-size:14px;cursor:pointer;transition:transform 0.08s ease-out;" style-active="transform:scale(0.85);">−</button>
+        <span style="font-size:14px;min-width:44px;text-align:center;">{{ cfgSuenoIdeal }} h</span>
+        <button onClick="{{ onCfgSuenoIdealInc }}" style="width:28px;height:28px;border-radius:6px;background:transparent;border:1px solid rgba(233,233,237,0.16);color:#e9e9ed;font-size:14px;cursor:pointer;transition:transform 0.08s ease-out;" style-active="transform:scale(0.85);">+</button>
+      </div>
+    </div>
+  </div>
+
+  <button onClick="{{ onFinishOnboarding }}" style="display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;font-family:'Inter',system-ui,sans-serif;font-weight:500;font-size:14px;color:#9184d9;background:transparent;border:1px solid #9184d9;padding:12px 16px;border-radius:8px;width:100%;min-height:44px;box-sizing:border-box;margin:4px 0 20px;">Comenzar</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ isSessionComplete }}" hint-placeholder-val="{{ false }}">
+<div style="min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:40px 12px;animation:screenIn 0.42s cubic-bezier(0.22,1,0.36,1);">
+  <div style="width:76px;height:76px;border-radius:50%;border:2px solid #9184d9;display:flex;align-items:center;justify-content:center;">
+    <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
+      <path d="M4 12.5L9.5 18L20 6" stroke="#9184d9" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path>
+    </svg>
+  </div>
+  <div>
+    <div style="font-size:22px;font-weight:500;color:#e9e9ed;">Rutina completada</div>
+    <div style="font-size:13px;color:rgba(233,233,237,0.6);margin-top:6px;">{{ sc_planLabel }} · {{ sc_exerciseCount }} ejercicios · {{ sc_setCount }} series</div>
+  </div>
+  <button onClick="{{ onCloseSessionComplete }}" style="display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;font-family:'Inter',system-ui,sans-serif;font-weight:500;font-size:14px;color:#9184d9;background:transparent;border:1px solid #9184d9;padding:10px 24px;border-radius:8px;min-height:44px;box-sizing:border-box;margin-top:8px;">Continuar</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ isHoy }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-direction:column;gap:12px;animation:screenIn 0.38s cubic-bezier(0.22,1,0.36,1);">
+
+  <div style="background:#232532;border-radius:8px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;">
+    <span style="font-size:13px;color:rgba(233,233,237,0.7);">Peso corporal</span>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button onClick="{{ onPesoDec }}" style="width:32px;height:32px;border-radius:6px;background:transparent;border:1px solid rgba(233,233,237,0.16);color:#e9e9ed;font-size:16px;cursor:pointer;transition:transform 0.08s ease-out;" style-active="transform:scale(0.85);">−</button>
+      <span style="font-size:16px;font-weight:500;min-width:80px;text-align:center;">{{ pesoVal }}</span>
+      <button onClick="{{ onPesoInc }}" style="width:32px;height:32px;border-radius:6px;background:transparent;border:1px solid rgba(233,233,237,0.16);color:#e9e9ed;font-size:16px;cursor:pointer;transition:transform 0.08s ease-out;" style-active="transform:scale(0.85);">+</button>
+    </div>
+  </div>
+
+  <div style="background:#232532;border-radius:8px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;">
+    <span style="font-size:13px;color:rgba(233,233,237,0.7);">Cintura</span>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button onClick="{{ onCinturaDec }}" style="width:32px;height:32px;border-radius:6px;background:transparent;border:1px solid rgba(233,233,237,0.16);color:#e9e9ed;font-size:16px;cursor:pointer;transition:transform 0.08s ease-out;" style-active="transform:scale(0.85);">−</button>
+      <span style="font-size:16px;font-weight:500;min-width:80px;text-align:center;">{{ cinturaVal }}</span>
+      <button onClick="{{ onCinturaInc }}" style="width:32px;height:32px;border-radius:6px;background:transparent;border:1px solid rgba(233,233,237,0.16);color:#e9e9ed;font-size:16px;cursor:pointer;transition:transform 0.08s ease-out;" style-active="transform:scale(0.85);">+</button>
+    </div>
+  </div>
+
+  <div style="background:#232532;border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:13px;color:rgba(233,233,237,0.7);">Pasos</span>
+      <span style="font-size:11px;color:rgba(233,233,237,0.55);">meta {{ metaPasos }}</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button onClick="{{ onPasosDec }}" style="width:32px;height:32px;flex:none;border-radius:6px;background:transparent;border:1px solid rgba(233,233,237,0.16);color:#e9e9ed;font-size:16px;cursor:pointer;transition:transform 0.08s ease-out;" style-active="transform:scale(0.85);">−</button>
+      <input type="number" value="{{ pasosVal }}" onChange="{{ onPasosInput }}" placeholder="Sin registrar" style="flex:1;min-height:36px;padding:6px 8px;font-size:15px;font-weight:500;color:#e9e9ed;background:#161826;border:1px solid rgba(233,233,237,0.16);border-radius:6px;box-sizing:border-box;text-align:center;">
+      <button onClick="{{ onPasosInc }}" style="width:32px;height:32px;flex:none;border-radius:6px;background:transparent;border:1px solid rgba(233,233,237,0.16);color:#e9e9ed;font-size:16px;cursor:pointer;transition:transform 0.08s ease-out;" style-active="transform:scale(0.85);">+</button>
+    </div>
+    <div style="height:4px;background:#3f424d;border-radius:2px;overflow:hidden;">
+      <div style="height:100%;background:#9184d9;width:{{ pasosPct }}%;transition:width 0.4s cubic-bezier(0.22,1,0.36,1);"></div>
+    </div>
+  </div>
+
+  <div style="background:#232532;border-radius:8px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;">
+    <span style="font-size:13px;color:rgba(233,233,237,0.7);">Sueño <span style="color:rgba(233,233,237,0.45);">/ {{ suenoIdeal }} h</span></span>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button onClick="{{ onSuenoDec }}" style="width:32px;height:32px;border-radius:6px;background:transparent;border:1px solid rgba(233,233,237,0.16);color:#e9e9ed;font-size:16px;cursor:pointer;transition:transform 0.08s ease-out;" style-active="transform:scale(0.85);">−</button>
+      <span style="font-size:16px;font-weight:500;min-width:80px;text-align:center;">{{ suenoVal }}</span>
+      <button onClick="{{ onSuenoInc }}" style="width:32px;height:32px;border-radius:6px;background:transparent;border:1px solid rgba(233,233,237,0.16);color:#e9e9ed;font-size:16px;cursor:pointer;transition:transform 0.08s ease-out;" style-active="transform:scale(0.85);">+</button>
+    </div>
+  </div>
+
+  <div style="background:#232532;border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;">
+      <span style="font-size:13px;color:rgba(233,233,237,0.7);">Calorías</span>
+      <span style="font-size:20px;font-weight:500;">{{ caloriasDisplayVal }}</span>
+    </div>
+    <input type="number" value="{{ caloriasVal }}" onChange="{{ onCaloriasChange }}" placeholder="Sin registrar" style="width:100%;min-height:36px;padding:6px 10px;font-size:14px;color:#e9e9ed;background:#161826;border:1px solid rgba(233,233,237,0.16);border-radius:8px;box-sizing:border-box;">
+    <div style="font-size:11px;color:rgba(233,233,237,0.55);">Objetivo {{ caloriasObjetivo }} kcal · <span style="color:#9184d9;">{{ caloriasDeltaLabel }}</span></div>
+  </div>
+
+  <div style="background:#232532;border-radius:8px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;">
+    <span style="font-size:13px;color:rgba(233,233,237,0.7);">Proteína <span style="color:rgba(233,233,237,0.45);">/ {{ proteinaIdeal }} g</span></span>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button onClick="{{ onProteinaDec }}" style="width:32px;height:32px;border-radius:6px;background:transparent;border:1px solid rgba(233,233,237,0.16);color:#e9e9ed;font-size:16px;cursor:pointer;transition:transform 0.08s ease-out;" style-active="transform:scale(0.85);">−</button>
+      <span style="font-size:16px;font-weight:500;min-width:80px;text-align:center;">{{ proteinaVal }}</span>
+      <button onClick="{{ onProteinaInc }}" style="width:32px;height:32px;border-radius:6px;background:transparent;border:1px solid rgba(233,233,237,0.16);color:#e9e9ed;font-size:16px;cursor:pointer;transition:transform 0.08s ease-out;" style-active="transform:scale(0.85);">+</button>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:12px;">
+    <div style="flex:1;background:#232532;border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;">
+      <span style="font-size:13px;color:rgba(233,233,237,0.7);">Cardio</span>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
+        <button onClick="{{ onCardioDec }}" style="width:28px;height:28px;flex:none;border-radius:6px;background:transparent;border:1px solid rgba(233,233,237,0.16);color:#e9e9ed;font-size:14px;cursor:pointer;transition:transform 0.08s ease-out;" style-active="transform:scale(0.85);">−</button>
+        <span style="font-size:14px;font-weight:500;">{{ cardioMinVal }}</span>
+        <button onClick="{{ onCardioInc }}" style="width:28px;height:28px;flex:none;border-radius:6px;background:transparent;border:1px solid rgba(233,233,237,0.16);color:#e9e9ed;font-size:14px;cursor:pointer;transition:transform 0.08s ease-out;" style-active="transform:scale(0.85);">+</button>
+      </div>
+    </div>
+    <div style="flex:1;background:#232532;border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;">
+      <span style="font-size:13px;color:rgba(233,233,237,0.7);">Energía</span>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
+        <button onClick="{{ onEnergiaDec }}" style="width:28px;height:28px;flex:none;border-radius:6px;background:transparent;border:1px solid rgba(233,233,237,0.16);color:#e9e9ed;font-size:14px;cursor:pointer;transition:transform 0.08s ease-out;" style-active="transform:scale(0.85);">−</button>
+        <span style="font-size:14px;font-weight:500;">{{ energiaVal }}</span>
+        <button onClick="{{ onEnergiaInc }}" style="width:28px;height:28px;flex:none;border-radius:6px;background:transparent;border:1px solid rgba(233,233,237,0.16);color:#e9e9ed;font-size:14px;cursor:pointer;transition:transform 0.08s ease-out;" style-active="transform:scale(0.85);">+</button>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:6px;">
+    <label style="font-size:12px;color:rgba(233,233,237,0.7);">Notas</label>
+    <textarea value="{{ notasVal }}" onChange="{{ onNotasChange }}" placeholder="Sensaciones, dolores, ajustes…" style="width:100%;min-height:70px;padding:8px 10px;font:inherit;font-size:14px;color:#e9e9ed;background:#232532;border:1px solid rgba(233,233,237,0.16);border-radius:8px;resize:vertical;box-sizing:border-box;"></textarea>
+  </div>
+
+  <span style="display:inline-flex;align-items:center;align-self:flex-start;font-size:11px;padding:3px 10px;border-radius:6px;background:transparent;color:{{ fuerzaColor }};border:1px solid {{ fuerzaColor }};">{{ fuerzaLabel }}</span>
+
+  <button onClick="{{ toggleDayLogged }}" style="display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;font-family:'Inter',system-ui,sans-serif;font-weight:500;font-size:14px;color:#9184d9;background:transparent;border:1px solid #9184d9;padding:10px 16px;border-radius:8px;width:100%;margin-top:2px;min-height:44px;box-sizing:border-box;">{{ dayLoggedLabel }}</button>
+
+</div>
+</sc-if>
+
+<sc-if value="{{ isEntrenamiento }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:12px;animation:screenIn 0.38s cubic-bezier(0.22,1,0.36,1);">
+
+  <sc-if value="{{ isStrengthDay }}" hint-placeholder-val="{{ true }}">
+    <sc-if value="{{ showWarmup }}" hint-placeholder-val="{{ true }}">
+      <div style="background:#232532;border-radius:8px;padding:12px 16px;display:flex;flex-direction:column;gap:4px;">
+        <span style="font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:#9184d9;">Calentamiento</span>
+        <span style="font-size:13px;color:rgba(233,233,237,0.75);">{{ warmupDesc }}</span>
+      </div>
+    </sc-if>
+    <div style="background:#232532;border-radius:8px;padding:12px 16px;display:flex;flex-direction:column;gap:6px;">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;">
+        <span style="font-size:13px;color:rgba(233,233,237,0.7);">Progreso de la sesión</span>
+        <span style="font-size:13px;color:#9184d9;">{{ progressDoneLabel }}</span>
+      </div>
+      <div style="height:4px;background:#3f424d;border-radius:2px;overflow:hidden;">
+        <div style="height:100%;background:#9184d9;width:{{ progressPct }}%;"></div>
+      </div>
+    </div>
+
+    <sc-for list="{{ exercisesList }}" as="ex" hint-placeholder-count="6">
+      <div style="background:#232532;border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
+          <div style="min-width:0;flex:1;">
+            <div style="font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:#9184d9;">Ejercicio {{ ex.order }}</div>
+            <div style="font-size:16px;font-weight:500;margin-top:2px;">{{ ex.name }}</div>
+            <div style="font-size:12px;color:rgba(233,233,237,0.55);margin-top:2px;">{{ ex.repRange }}</div>
+          </div>
+          <button onClick="{{ ex.onToggleVariante }}" style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;background:transparent;border:none;flex:none;width:78px;font-family:'Inter',system-ui,sans-serif;padding:2px;margin-top:14px;">
+            <span style="font-size:9px;color:rgba(233,233,237,0.6);white-space:nowrap;">Añadir Variante</span>
+            <span style="width:30px;height:17px;border-radius:9px;background:{{ ex.varianteToggleBg }};border:1px solid {{ ex.varianteToggleBorder }};position:relative;display:block;box-sizing:border-box;">
+              <span style="position:absolute;top:1px;left:{{ ex.varianteKnobLeft }};width:13px;height:13px;border-radius:50%;background:#e9e9ed;transition:left 0.15s ease;"></span>
+            </span>
+          </button>
+        </div>
+        <sc-if value="{{ ex.varianteOn }}" hint-placeholder-val="{{ false }}">
+          <input type="text" value="{{ ex.variante }}" onChange="{{ ex.onVarianteChange }}" placeholder="p. ej. Banda 25 kg, agarre neutro" style="width:100%;min-height:34px;padding:6px 8px;font-size:12px;font-family:'Inter',system-ui,sans-serif;color:#e9e9ed;background:#161826;border:1px solid rgba(233,233,237,0.16);border-radius:6px;box-sizing:border-box;">
+        </sc-if>
+        <sc-if value="{{ ex.showTechnique }}" hint-placeholder-val="{{ true }}">
+          <div style="font-size:12px;color:rgba(233,233,237,0.6);border-left:2px solid #423a6a;padding-left:8px;">{{ ex.tecnica }}</div>
+        </sc-if>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <sc-for list="{{ ex.sets }}" as="st" hint-placeholder-count="2">
+            <div style="position:relative;border-radius:6px;overflow:hidden;">
+              <div style="position:absolute;inset:0;background:rgba(196,90,90,0.22);display:flex;align-items:center;justify-content:flex-end;padding-right:14px;">
+                <span style="font-size:11px;color:#e3a3a3;">Eliminar</span>
+              </div>
+              <div onPointerDown="{{ st.onDown }}" onPointerMove="{{ st.onMove }}" onPointerUp="{{ st.onUp }}" onPointerCancel="{{ st.onUp }}" style="display:flex;align-items:center;gap:8px;background:#232532;transform:translateX({{ st.dragX }}px);transition:{{ st.dragTransition }};touch-action:pan-y;">
+                <span style="font-size:12px;color:rgba(233,233,237,0.55);width:48px;flex:none;">{{ st.label }}</span>
+                <input type="number" value="{{ st.peso }}" onChange="{{ st.onPeso }}" placeholder="{{ st.pesoPh }}" style="width:56px;flex:none;min-height:36px;padding:6px 8px;font-size:13px;color:#e9e9ed;background:#161826;border:1px solid rgba(233,233,237,0.16);border-radius:6px;box-sizing:border-box;">
+                <input type="number" value="{{ st.reps }}" onChange="{{ st.onReps }}" placeholder="{{ st.repsPh }}" style="flex:1;min-height:36px;padding:6px 8px;font-size:13px;color:#e9e9ed;background:#161826;border:1px solid rgba(233,233,237,0.16);border-radius:6px;box-sizing:border-box;min-width:0;">
+                <input type="number" value="{{ st.rir }}" onChange="{{ st.onRir }}" placeholder="RIR" style="width:56px;flex:none;min-height:36px;padding:6px 8px;font-size:13px;color:#e9e9ed;background:#161826;border:1px solid rgba(233,233,237,0.16);border-radius:6px;box-sizing:border-box;">
+                <button onClick="{{ st.onToggle }}" style="width:36px;height:36px;flex:none;border-radius:6px;cursor:pointer;background:{{ st.btnBg }};border:1px solid {{ st.btnBorder }};color:{{ st.btnColor }};font-size:15px;" style-active="transform:scale(0.82);">✓</button>
+              </div>
+            </div>
+          </sc-for>
+          <button onClick="{{ ex.onAddSet }}" style="align-self:flex-start;font-size:12px;color:#9184d9;background:transparent;border:1px dashed rgba(145,132,217,0.5);border-radius:6px;padding:6px 10px;cursor:pointer;font-family:'Inter',system-ui,sans-serif;">+ agregar serie</button>
+        </div>
+      </div>
+    </sc-for>
+  </sc-if>
+
+  <sc-if value="{{ isCardioDay }}" hint-placeholder-val="{{ false }}">
+    <div style="background:#232532;border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:10px;">
+      <div style="font-size:16px;font-weight:500;">Sesión de cardio</div>
+      <div style="font-size:13px;color:rgba(233,233,237,0.7);">{{ cardioDescToday }}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
+        <span style="font-size:13px;color:rgba(233,233,237,0.7);">Minutos realizados</span>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <button onClick="{{ onCardioDec }}" style="width:28px;height:28px;border-radius:6px;background:transparent;border:1px solid rgba(233,233,237,0.16);color:#e9e9ed;font-size:14px;cursor:pointer;transition:transform 0.08s ease-out;" style-active="transform:scale(0.85);">−</button>
+          <span style="font-size:16px;font-weight:500;min-width:80px;text-align:center;">{{ cardioMinVal }}</span>
+          <button onClick="{{ onCardioInc }}" style="width:28px;height:28px;border-radius:6px;background:transparent;border:1px solid rgba(233,233,237,0.16);color:#e9e9ed;font-size:14px;cursor:pointer;transition:transform 0.08s ease-out;" style-active="transform:scale(0.85);">+</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isRestDay }}" hint-placeholder-val="{{ false }}">
+    <div style="background:#232532;border-radius:8px;padding:24px 16px;text-align:center;display:flex;flex-direction:column;gap:6px;">
+      <div style="font-size:16px;font-weight:500;">Día de descanso</div>
+      <div style="font-size:13px;color:rgba(233,233,237,0.6);">No hay sesión programada. Aprovecha para dormir bien y llegar a la meta de proteína.</div>
+    </div>
+  </sc-if>
+
+</div>
+</sc-if>
+
+<sc-if value="{{ isRutina }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:12px;animation:screenIn 0.38s cubic-bezier(0.22,1,0.36,1);">
+  <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;">
+    <sc-for list="{{ dayTabs }}" as="dt" hint-placeholder-count="7">
+      <button onClick="{{ dt.onClick }}" style="flex:none;padding:8px 12px;border-radius:8px;font-size:12px;font-family:'Inter',system-ui,sans-serif;cursor:pointer;background:transparent;border:1px solid {{ dt.color }};color:{{ dt.color }};">{{ dt.short }}</button>
+    </sc-for>
+  </div>
+  <div style="font-size:13px;color:rgba(233,233,237,0.6);">{{ rutinaPlanLabel }}</div>
+
+  <sc-if value="{{ rutinaIsStrength }}" hint-placeholder-val="{{ true }}">
+    <sc-if value="{{ rutinaShowWarmup }}" hint-placeholder-val="{{ true }}">
+      <div style="background:#232532;border-radius:8px;padding:12px 16px;display:flex;flex-direction:column;gap:4px;">
+        <span style="font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:#9184d9;">Calentamiento</span>
+        <span style="font-size:13px;color:rgba(233,233,237,0.75);">{{ warmupDescRutina }}</span>
+      </div>
+    </sc-if>
+    <sc-for list="{{ rutinaExercises }}" as="ex" hint-placeholder-count="6">
+      <div style="background:#232532;border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:6px;">
+        <span style="font-size:15px;font-weight:500;">{{ ex.order }}. {{ ex.name }}</span>
+        <div style="font-size:12px;color:rgba(233,233,237,0.55);">{{ ex.seriesLabel }} · {{ ex.repRange }} · descanso {{ ex.rest }}</div>
+        <sc-if value="{{ ex.showTechnique }}" hint-placeholder-val="{{ true }}">
+          <div style="font-size:12px;color:rgba(233,233,237,0.6);border-left:2px solid #423a6a;padding-left:8px;">{{ ex.tecnica }}</div>
+        </sc-if>
+      </div>
+    </sc-for>
+  </sc-if>
+  <sc-if value="{{ rutinaIsCardio }}" hint-placeholder-val="{{ false }}">
+    <div style="background:#232532;border-radius:8px;padding:16px;font-size:13px;color:rgba(233,233,237,0.75);">{{ rutinaCardioDesc }}</div>
+  </sc-if>
+  <sc-if value="{{ rutinaIsRest }}" hint-placeholder-val="{{ false }}">
+    <div style="background:#232532;border-radius:8px;padding:16px;font-size:13px;color:rgba(233,233,237,0.75);">Descanso completo. Sin ejercicio programado.</div>
+  </sc-if>
+
+  <div style="background:#232532;border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:6px;margin-top:4px;">
+    <div style="font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:#9184d9;">Progresiones</div>
+    <div style="font-size:12px;color:rgba(233,233,237,0.7);">Dominadas: power band 25 kg → 15 kg → sin banda.</div>
+    <div style="font-size:12px;color:rgba(233,233,237,0.7);">Flexiones: manos en banco → piso → pies elevados o banda.</div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isPanel }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:12px;animation:screenIn 0.38s cubic-bezier(0.22,1,0.36,1);">
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+    <div style="background:#232532;border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:3px;">
+      <span style="font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:rgba(233,233,237,0.55);">Peso</span>
+      <span style="font-size:17px;font-weight:500;">{{ p_pesoVal }}</span>
+      <span style="font-size:10px;color:rgba(233,233,237,0.5);">{{ p_pesoRegistros }}</span>
+      <span style="font-size:10px;color:#9184d9;">{{ p_pesoTag }}</span>
+    </div>
+    <div style="background:#232532;border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:3px;">
+      <span style="font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:rgba(233,233,237,0.55);">Cintura</span>
+      <span style="font-size:17px;font-weight:500;">{{ p_cinturaVal }}</span>
+      <span style="font-size:10px;color:rgba(233,233,237,0.5);">{{ p_cinturaRegistros }}</span>
+      <span style="font-size:10px;color:#9184d9;">{{ p_cinturaTag }}</span>
+    </div>
+    <div style="background:#232532;border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:3px;">
+      <span style="font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:rgba(233,233,237,0.55);">Pasos</span>
+      <span style="font-size:17px;font-weight:500;">{{ p_pasosVal }}</span>
+      <span style="font-size:10px;color:rgba(233,233,237,0.5);">meta {{ metaPasos }} · {{ p_pasosCumpl }}</span>
+      <span style="font-size:10px;color:rgba(233,233,237,0.5);">{{ p_pasosRegistros }}</span>
+    </div>
+    <div style="background:#232532;border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:3px;">
+      <span style="font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:rgba(233,233,237,0.55);">Sueño</span>
+      <span style="font-size:17px;font-weight:500;">{{ p_suenoVal }}</span>
+      <span style="font-size:10px;color:rgba(233,233,237,0.5);">objetivo {{ suenoIdeal }} h</span>
+      <span style="font-size:10px;color:rgba(233,233,237,0.5);">{{ p_suenoRegistros }}</span>
+    </div>
+    <div style="background:#232532;border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:3px;">
+      <span style="font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:rgba(233,233,237,0.55);">Calorías</span>
+      <span style="font-size:17px;font-weight:500;">{{ p_caloriasVal }}</span>
+      <span style="font-size:10px;color:rgba(233,233,237,0.5);">obj {{ caloriasObjetivo }} ± {{ p_tolerancia }} · {{ p_caloriasCumpl }}</span>
+      <span style="font-size:10px;color:rgba(233,233,237,0.5);">{{ p_caloriasRegistros }}</span>
+    </div>
+    <div style="background:#232532;border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:3px;">
+      <span style="font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:rgba(233,233,237,0.55);">Proteína</span>
+      <span style="font-size:17px;font-weight:500;">{{ p_proteinaVal }}</span>
+      <span style="font-size:10px;color:rgba(233,233,237,0.5);">mín {{ p_protMin }} / ideal {{ proteinaIdeal }} · {{ p_proteinaCumpl }}</span>
+      <span style="font-size:10px;color:rgba(233,233,237,0.5);">{{ p_proteinaRegistros }}</span>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:10px;">
+    <div style="flex:1;background:#232532;border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:3px;">
+      <span style="font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:rgba(233,233,237,0.55);">Fuerza</span>
+      <span style="font-size:15px;font-weight:500;">{{ p_fuerzaVal }}</span>
+    </div>
+    <div style="flex:1;background:#232532;border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:3px;">
+      <span style="font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:rgba(233,233,237,0.55);">Cardio semanal</span>
+      <span style="font-size:15px;font-weight:500;">{{ p_cardioVal }}</span>
+    </div>
+  </div>
+
+  <div style="background:#232532;border-radius:8px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;">
+    <div>
+      <div style="font-size:12px;color:rgba(233,233,237,0.7);">Cumplimiento general</div>
+      <div style="font-size:15px;font-weight:500;">{{ p_generalVal }}</div>
+    </div>
+    <span style="font-size:11px;padding:3px 10px;border-radius:6px;border:1px solid {{ p_generalColor }};color:{{ p_generalColor }};">{{ p_generalTag }}</span>
+  </div>
+
+  <div style="background:#232532;border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:3px;">
+    <span style="font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:#9184d9;">Recomendación semanal</span>
+    <span style="font-size:13px;color:rgba(233,233,237,0.85);">{{ p_recomendacion }}</span>
+  </div>
+
+  <div style="font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:rgba(233,233,237,0.55);margin-top:4px;">16 semanas</div>
+  <div style="display:flex;flex-direction:column;">
+    <sc-for list="{{ weeksTable }}" as="wk" hint-placeholder-count="8">
+      <div style="display:flex;flex-direction:column;gap:2px;padding:8px 0;border-bottom:1px solid rgba(233,233,237,0.1);">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;">
+          <span style="font-size:12px;color:rgba(233,233,237,0.8);">Semana {{ wk.label }} · {{ wk.dateLabel }}</span>
+          <span style="font-size:10px;color:{{ wk.estadoColor }};">{{ wk.estado }}</span>
+        </div>
+        <div style="display:flex;gap:12px;font-size:11px;color:rgba(233,233,237,0.55);">
+          <span>Peso {{ wk.peso }}</span>
+          <span>Cintura {{ wk.cintura }}</span>
+          <span>Cumpl. {{ wk.cumplimiento }}</span>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isConfig }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:12px;animation:screenIn 0.38s cubic-bezier(0.22,1,0.36,1);">
+
+  <div style="background:#232532;border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;">
+    <div style="font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:#9184d9;">Datos personales</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:13px;color:rgba(233,233,237,0.7);">Edad</span>
+      <input type="number" value="{{ cfgEdad }}" onChange="{{ onCfgEdad }}" style="width:64px;min-height:36px;padding:6px 8px;font-size:14px;color:#e9e9ed;background:#161826;border:1px solid rgba(233,233,237,0.16);border-radius:6px;text-align:right;box-sizing:border-box;">
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:13px;color:rgba(233,233,237,0.7);">Sexo</span>
+      <div style="display:inline-flex;overflow:hidden;border:1px solid rgba(233,233,237,0.16);border-radius:8px;">
+        <button onClick="{{ onCfgSexoHombre }}" style="padding:6px 12px;font-size:12px;cursor:pointer;background:{{ cfgSexoHombreBg }};border:none;color:{{ cfgSexoHombreColor }};">Hombre</button>
+        <button onClick="{{ onCfgSexoMujer }}" style="padding:6px 12px;font-size:12px;cursor:pointer;background:{{ cfgSexoMujerBg }};border:none;border-left:1px solid rgba(233,233,237,0.16);color:{{ cfgSexoMujerColor }};">Mujer</button>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:13px;color:rgba(233,233,237,0.7);">Estatura</span>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button onClick="{{ onCfgEstaturaDec }}" style="width:28px;height:28px;border-radius:6px;background:transparent;border:1px solid rgba(233,233,237,0.16);color:#e9e9ed;font-size:14px;cursor:pointer;transition:transform 0.08s ease-out;" style-active="transform:scale(0.85);">−</button>
+        <span style="font-size:14px;min-width:48px;text-align:center;">{{ cfgEstatura }} m</span>
+        <button onClick="{{ onCfgEstaturaInc }}" style="width:28px;height:28px;border-radius:6px;background:transparent;border:1px solid rgba(233,233,237,0.16);color:#e9e9ed;font-size:14px;cursor:pointer;transition:transform 0.08s ease-out;" style-active="transform:scale(0.85);">+</button>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:#232532;border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;">
+    <div style="font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:#9184d9;">Punto de partida</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:13px;color:rgba(233,233,237,0.7);">Peso inicial</span>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button onClick="{{ onCfgPesoInicialDec }}" style="width:28px;height:28px;border-radius:6px;background:transparent;border:1px solid rgba(233,233,237,0.16);color:#e9e9ed;font-size:14px;cursor:pointer;transition:transform 0.08s ease-out;" style-active="transform:scale(0.85);">−</button>
+        <span style="font-size:14px;min-width:64px;text-align:center;">{{ cfgPesoInicialLabel }}</span>
+        <button onClick="{{ onCfgPesoInicialInc }}" style="width:28px;height:28px;border-radius:6px;background:transparent;border:1px solid rgba(233,233,237,0.16);color:#e9e9ed;font-size:14px;cursor:pointer;transition:transform 0.08s ease-out;" style-active="transform:scale(0.85);">+</button>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:13px;color:rgba(233,233,237,0.7);">Cintura inicial</span>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button onClick="{{ onCfgCinturaInicialDec }}" style="width:28px;height:28px;border-radius:6px;background:transparent;border:1px solid rgba(233,233,237,0.16);color:#e9e9ed;font-size:14px;cursor:pointer;transition:transform 0.08s ease-out;" style-active="transform:scale(0.85);">−</button>
+        <span style="font-size:14px;min-width:64px;text-align:center;">{{ cfgCinturaInicialLabel }}</span>
+        <button onClick="{{ onCfgCinturaInicialInc }}" style="width:28px;height:28px;border-radius:6px;background:transparent;border:1px solid rgba(233,233,237,0.16);color:#e9e9ed;font-size:14px;cursor:pointer;transition:transform 0.08s ease-out;" style-active="transform:scale(0.85);">+</button>
+      </div>
+    </div>
+    <div style="font-size:11px;color:rgba(233,233,237,0.5);">Medida después de comer; queda como referencia provisional hasta reemplazarla por el promedio de 3 mediciones en ayunas.</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:13px;color:rgba(233,233,237,0.7);">Inicio del plan</span>
+      <input type="date" value="{{ cfgInicioPlan }}" onChange="{{ onCfgInicioPlan }}" style="min-height:36px;padding:6px 8px;font-size:13px;font-family:'Inter',system-ui,sans-serif;color:#e9e9ed;background:#161826;border:1px solid rgba(233,233,237,0.16);border-radius:6px;box-sizing:border-box;accent-color:#9184d9;">
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:13px;color:rgba(233,233,237,0.7);">Duración</span>
+      <input type="number" value="{{ cfgDuracion }}" onChange="{{ onCfgDuracion }}" style="width:64px;min-height:36px;padding:6px 8px;font-size:14px;color:#e9e9ed;background:#161826;border:1px solid rgba(233,233,237,0.16);border-radius:6px;text-align:right;box-sizing:border-box;">
+    </div>
+  </div>
+
+  <button onClick="{{ onOpenManageExercises }}" style="background:#232532;border-radius:8px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;border:none;text-align:left;font-family:'Inter',system-ui,sans-serif;width:100%;box-sizing:border-box;">
+    <div>
+      <div style="font-size:14px;font-weight:500;color:#e9e9ed;">Administrar ejercicios</div>
+      <div style="font-size:11px;color:rgba(233,233,237,0.55);margin-top:2px;">Editar nombres, series y orden de la rutina</div>
+    </div>
+    <span style="color:#9184d9;font-size:16px;">›</span>
+  </button>
+
+  <div style="background:#232532;border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;">
+    <div style="font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:#9184d9;">Metas nutricionales</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:13px;color:rgba(233,233,237,0.7);">Calorías objetivo</span>
+      <input type="number" value="{{ cfgCalorias }}" onChange="{{ onCfgCalorias }}" style="width:72px;min-height:36px;padding:6px 8px;font-size:14px;color:#e9e9ed;background:#161826;border:1px solid rgba(233,233,237,0.16);border-radius:6px;text-align:right;box-sizing:border-box;">
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:13px;color:rgba(233,233,237,0.7);">Tolerancia (±)</span>
+      <input type="number" value="{{ cfgTolerancia }}" onChange="{{ onCfgTolerancia }}" style="width:72px;min-height:36px;padding:6px 8px;font-size:14px;color:#e9e9ed;background:#161826;border:1px solid rgba(233,233,237,0.16);border-radius:6px;text-align:right;box-sizing:border-box;">
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:13px;color:rgba(233,233,237,0.7);">Proteína mínima</span>
+      <input type="number" value="{{ cfgProtMin }}" onChange="{{ onCfgProtMin }}" style="width:72px;min-height:36px;padding:6px 8px;font-size:14px;color:#e9e9ed;background:#161826;border:1px solid rgba(233,233,237,0.16);border-radius:6px;text-align:right;box-sizing:border-box;">
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:13px;color:rgba(233,233,237,0.7);">Proteína ideal</span>
+      <input type="number" value="{{ cfgProtIdeal }}" onChange="{{ onCfgProtIdeal }}" style="width:72px;min-height:36px;padding:6px 8px;font-size:14px;color:#e9e9ed;background:#161826;border:1px solid rgba(233,233,237,0.16);border-radius:6px;text-align:right;box-sizing:border-box;">
+    </div>
+  </div>
+
+  <div style="background:#232532;border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;">
+    <div style="font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:#9184d9;">Sueño</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:13px;color:rgba(233,233,237,0.7);">Mínimo</span>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button onClick="{{ onCfgSuenoMinDec }}" style="width:28px;height:28px;border-radius:6px;background:transparent;border:1px solid rgba(233,233,237,0.16);color:#e9e9ed;font-size:14px;cursor:pointer;transition:transform 0.08s ease-out;" style-active="transform:scale(0.85);">−</button>
+        <span style="font-size:14px;min-width:44px;text-align:center;">{{ cfgSuenoMin }} h</span>
+        <button onClick="{{ onCfgSuenoMinInc }}" style="width:28px;height:28px;border-radius:6px;background:transparent;border:1px solid rgba(233,233,237,0.16);color:#e9e9ed;font-size:14px;cursor:pointer;transition:transform 0.08s ease-out;" style-active="transform:scale(0.85);">+</button>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:13px;color:rgba(233,233,237,0.7);">Ideal</span>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button onClick="{{ onCfgSuenoIdealDec }}" style="width:28px;height:28px;border-radius:6px;background:transparent;border:1px solid rgba(233,233,237,0.16);color:#e9e9ed;font-size:14px;cursor:pointer;transition:transform 0.08s ease-out;" style-active="transform:scale(0.85);">−</button>
+        <span style="font-size:14px;min-width:44px;text-align:center;">{{ cfgSuenoIdeal }} h</span>
+        <button onClick="{{ onCfgSuenoIdealInc }}" style="width:28px;height:28px;border-radius:6px;background:transparent;border:1px solid rgba(233,233,237,0.16);color:#e9e9ed;font-size:14px;cursor:pointer;transition:transform 0.08s ease-out;" style-active="transform:scale(0.85);">+</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+</sc-if>
+
+<sc-if value="{{ isManageExercises }}" hint-placeholder-val="{{ false }}">
+<div onPointerDown="{{ onBackSwipeStart }}" onPointerMove="{{ onBackSwipeMove }}" onPointerUp="{{ onBackSwipeEnd }}" onPointerCancel="{{ onBackSwipeEnd }}" style="display:flex;flex-direction:column;gap:12px;transform:translateX({{ backSwipeX }}px);transition:{{ backSwipeTransition }};touch-action:pan-y;animation:screenIn 0.38s cubic-bezier(0.22,1,0.36,1);">
+  <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;">
+    <sc-for list="{{ manageDayTabs }}" as="dt" hint-placeholder-count="4">
+      <button onClick="{{ dt.onClick }}" style="flex:none;padding:8px 12px;border-radius:8px;font-size:12px;font-family:'Inter',system-ui,sans-serif;cursor:pointer;background:transparent;border:1px solid {{ dt.color }};color:{{ dt.color }};">{{ dt.label }}</button>
+    </sc-for>
+  </div>
+  <div style="font-size:13px;color:rgba(233,233,237,0.6);">{{ managePlanLabel }}</div>
+
+  <sc-if value="{{ managePlanIsStrength }}" hint-placeholder-val="{{ true }}">
+    <sc-for list="{{ manageExercises }}" as="ex" hint-placeholder-count="6">
+      <div style="background:#232532;border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;opacity:{{ ex.rowOpacity }};">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+          <span style="font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:#9184d9;">Ejercicio {{ ex.position }}</span>
+          <div onPointerDown="{{ ex.onDragStart }}" onPointerMove="{{ ex.onDragMove }}" onPointerUp="{{ ex.onDragEnd }}" onPointerCancel="{{ ex.onDragEnd }}" style="width:32px;height:28px;border-radius:6px;background:transparent;border:1px solid rgba(233,233,237,0.16);display:flex;align-items:center;justify-content:center;cursor:grab;touch-action:none;color:rgba(233,233,237,0.6);font-size:14px;letter-spacing:2px;">⠿</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <label style="font-size:11px;color:rgba(233,233,237,0.55);">Nombre del ejercicio</label>
+          <input type="text" value="{{ ex.name }}" onChange="{{ ex.onNameChange }}" style="width:100%;min-height:36px;padding:6px 10px;font-size:13px;font-family:'Inter',system-ui,sans-serif;color:#e9e9ed;background:#161826;border:1px solid rgba(233,233,237,0.16);border-radius:6px;box-sizing:border-box;">
+        </div>
+        <div style="display:flex;gap:10px;">
+          <div style="flex:1;display:flex;flex-direction:column;gap:4px;">
+            <label style="font-size:11px;color:rgba(233,233,237,0.55);">Reps mín.</label>
+            <input type="number" value="{{ ex.repMin }}" onChange="{{ ex.onRepMinChange }}" style="width:100%;min-height:36px;padding:6px 8px;font-size:13px;color:#e9e9ed;background:#161826;border:1px solid rgba(233,233,237,0.16);border-radius:6px;box-sizing:border-box;">
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:4px;">
+            <label style="font-size:11px;color:rgba(233,233,237,0.55);">Reps máx.</label>
+            <input type="number" value="{{ ex.repMax }}" onChange="{{ ex.onRepMaxChange }}" style="width:100%;min-height:36px;padding:6px 8px;font-size:13px;color:#e9e9ed;background:#161826;border:1px solid rgba(233,233,237,0.16);border-radius:6px;box-sizing:border-box;">
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:4px;">
+            <label style="font-size:11px;color:rgba(233,233,237,0.55);">Unidad</label>
+            <div style="min-height:36px;display:flex;align-items:center;font-size:12px;color:rgba(233,233,237,0.6);">{{ ex.unit }}</div>
+          </div>
+        </div>
+      </div>
+    </sc-for>
+  </sc-if>
+
+  <sc-if value="{{ managePlanIsCardio }}" hint-placeholder-val="{{ false }}">
+    <div style="background:#232532;border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;">
+      <label style="font-size:11px;color:rgba(233,233,237,0.55);">Descripción de la sesión</label>
+      <textarea value="{{ manageCardioDesc }}" onChange="{{ onManageCardioDescChange }}" style="width:100%;min-height:90px;padding:8px 10px;font:inherit;font-size:13px;color:#e9e9ed;background:#161826;border:1px solid rgba(233,233,237,0.16);border-radius:6px;resize:vertical;box-sizing:border-box;"></textarea>
+    </div>
+  </sc-if>
+</div>
+</sc-if>
+
+</div>
+
+<sc-if value="{{ showTabBar }}" hint-placeholder-val="{{ true }}">
+<div style="flex:none;display:flex;border-top:1px solid rgba(233,233,237,0.16);background:#1c1e2c;padding:10px 6px 24px;">
+  <button onClick="{{ setTabHoy }}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;background:transparent;border:none;cursor:pointer;padding:4px 0;">
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+      <rect x="3" y="4" width="16" height="15" rx="2" stroke="{{ hoyColor }}" stroke-width="1.8"></rect>
+      <line x1="3" y1="9" x2="19" y2="9" stroke="{{ hoyColor }}" stroke-width="1.8"></line>
+      <line x1="7" y1="2" x2="7" y2="6" stroke="{{ hoyColor }}" stroke-width="1.8"></line>
+      <line x1="15" y1="2" x2="15" y2="6" stroke="{{ hoyColor }}" stroke-width="1.8"></line>
+    </svg>
+    <span style="font-size:10px;color:{{ hoyColor }};">Hoy</span>
+  </button>
+  <button onClick="{{ setTabEntrenamiento }}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;background:transparent;border:none;cursor:pointer;padding:4px 0;">
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+      <line x1="4" y1="11" x2="18" y2="11" stroke="{{ entrenamientoColor }}" stroke-width="1.8"></line>
+      <rect x="2" y="8" width="4" height="6" rx="1" stroke="{{ entrenamientoColor }}" stroke-width="1.8"></rect>
+      <rect x="16" y="8" width="4" height="6" rx="1" stroke="{{ entrenamientoColor }}" stroke-width="1.8"></rect>
+    </svg>
+    <span style="font-size:10px;color:{{ entrenamientoColor }};">Entreno</span>
+  </button>
+  <button onClick="{{ setTabRutina }}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;background:transparent;border:none;cursor:pointer;padding:4px 0;">
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+      <line x1="4" y1="6" x2="18" y2="6" stroke="{{ rutinaColor }}" stroke-width="1.8"></line>
+      <line x1="4" y1="11" x2="18" y2="11" stroke="{{ rutinaColor }}" stroke-width="1.8"></line>
+      <line x1="4" y1="16" x2="18" y2="16" stroke="{{ rutinaColor }}" stroke-width="1.8"></line>
+    </svg>
+    <span style="font-size:10px;color:{{ rutinaColor }};">Rutina</span>
+  </button>
+  <button onClick="{{ setTabPanel }}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;background:transparent;border:none;cursor:pointer;padding:4px 0;">
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+      <rect x="3" y="12" width="3" height="7" stroke="{{ panelColor }}" stroke-width="1.8"></rect>
+      <rect x="9.5" y="7" width="3" height="12" stroke="{{ panelColor }}" stroke-width="1.8"></rect>
+      <rect x="16" y="3" width="3" height="16" stroke="{{ panelColor }}" stroke-width="1.8"></rect>
+    </svg>
+    <span style="font-size:10px;color:{{ panelColor }};">Panel</span>
+  </button>
+  <button onClick="{{ setTabConfig }}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;background:transparent;border:none;cursor:pointer;padding:4px 0;">
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+      <circle cx="11" cy="11" r="7" stroke="{{ configColor }}" stroke-width="1.8"></circle>
+      <circle cx="11" cy="11" r="2.5" stroke="{{ configColor }}" stroke-width="1.8"></circle>
+    </svg>
+    <span style="font-size:10px;color:{{ configColor }};">Config</span>
+  </button>
+</div>
+</sc-if>
+
+</div>
+</x-import>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;$preview&quot;: {&quot;width&quot;: 480, &quot;height&quot;: 940},
+  &quot;currentDay&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;Lunes&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;options&quot;: [&quot;Lunes&quot;,&quot;Martes&quot;,&quot;Miércoles&quot;,&quot;Jueves&quot;,&quot;Viernes&quot;,&quot;Sábado&quot;,&quot;Domingo&quot;], &quot;section&quot;: &quot;Comportamiento&quot;},
+  &quot;sistemaUnidades&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;kg&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;options&quot;: [&quot;kg&quot;,&quot;lb&quot;], &quot;section&quot;: &quot;Comportamiento&quot;},
+  &quot;showTechnique&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Comportamiento&quot;}
+}">
+const DAY_ORDER = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+const PLAN_BY_DAY = {
+  Lunes: 'Superior A', Martes: 'Inferior A', Miércoles: 'Cardio', Jueves: 'Superior B',
+  Viernes: 'Inferior B', Sábado: 'Cardio opcional', Domingo: 'Descanso',
+};
+const STRENGTH_PLANS = ['Superior A', 'Inferior A', 'Superior B', 'Inferior B'];
+const STEP_GOAL = { 1: 4000, 2: 5000, 3: 6000 };
+function stepGoalForWeek(w) { return STEP_GOAL[w] || 7000; }
+
+const ROUTINE = {
+  'Superior A': [
+    { order: 1, name: 'Press plano con mancuernas', sets: 2, repMin: 6, repMax: 10, unit: 'reps', rest: '2–3 min', tecnica: 'Registra el peso de cada mancuerna.' },
+    { order: 2, name: 'Dominada neutra asistida', sets: 2, repMin: 5, repMax: 8, unit: 'reps', rest: '2–3 min', tecnica: 'Registra la power band: 25 kg → 15 kg → sin banda.' },
+    { order: 3, name: 'Remo con mancuerna a una mano', sets: 2, repMin: 8, repMax: 12, unit: 'reps/lado', rest: '2 min', tecnica: 'Registra las repeticiones del lado más débil.' },
+    { order: 4, name: 'Press de hombros con mancuernas', sets: 2, repMin: 8, repMax: 12, unit: 'reps', rest: '2 min', tecnica: 'Sin arquear exageradamente la espalda.' },
+    { order: 5, name: 'Elevación lateral con mancuernas', sets: 2, repMin: 12, repMax: 20, unit: 'reps', rest: '60–90 s', tecnica: 'Controla la bajada; no balancees el torso.' },
+    { order: 6, name: 'Curl de bíceps con mancuernas', sets: 2, repMin: 10, repMax: 15, unit: 'reps', rest: '60–90 s', tecnica: 'Codos estables.' },
+    { order: 7, name: 'Extensión de tríceps con banda', sets: 2, repMin: 10, repMax: 15, unit: 'reps', rest: '60–90 s', tecnica: 'Anclaje alto; registra color y combinación.' },
+  ],
+  'Inferior A': [
+    { order: 1, name: 'Sentadilla búlgara con mancuernas', sets: 2, repMin: 8, repMax: 12, unit: 'reps/pierna', rest: '2–3 min', tecnica: 'Registra el lado más débil; banco firme.' },
+    { order: 2, name: 'Peso muerto rumano con barra', sets: 2, repMin: 8, repMax: 12, unit: 'reps', rest: '2–3 min', tecnica: 'Cadera atrás y espalda neutra.' },
+    { order: 3, name: 'Sentadilla goblet con talones elevados', sets: 2, repMin: 10, repMax: 15, unit: 'reps', rest: '2 min', tecnica: 'Recorrido controlado y rodillas alineadas.' },
+    { order: 4, name: 'Hip thrust con barra', sets: 2, repMin: 8, repMax: 12, unit: 'reps', rest: '2 min', tecnica: 'Pausa breve arriba; usa almohadilla.' },
+    { order: 5, name: 'Elevación de pantorrillas con peso', sets: 2, repMin: 12, repMax: 20, unit: 'reps', rest: '60–90 s', tecnica: 'Estira abajo y pausa arriba.' },
+    { order: 6, name: 'Plancha abdominal', sets: 2, repMin: 30, repMax: 60, unit: 'seg', rest: '60 s', tecnica: 'Cuerpo recto; detén si pierdes posición.' },
+  ],
+  'Superior B': [
+    { order: 1, name: 'Dominada supina asistida', sets: 2, repMin: 5, repMax: 8, unit: 'reps', rest: '2–3 min', tecnica: 'Registra la power band usada.' },
+    { order: 2, name: 'Flexión con manos sobre banco', sets: 2, repMin: 8, repMax: 12, unit: 'reps', rest: '2 min', tecnica: 'Cuando logres 3×12 a 2 RIR, pasa al piso.' },
+    { order: 3, name: 'Remo con banda tubular', sets: 2, repMin: 10, repMax: 15, unit: 'reps', rest: '2 min', tecnica: 'Registra color/combinación y distancia al anclaje.' },
+    { order: 4, name: 'Apertura de pecho con banda', sets: 2, repMin: 12, repMax: 20, unit: 'reps', rest: '60–90 s', tecnica: 'Anclaje estable; movimiento controlado.' },
+    { order: 5, name: 'Elevación lateral', sets: 2, repMin: 12, repMax: 20, unit: 'reps', rest: '60–90 s', tecnica: 'Puede hacerse con mancuerna o banda.' },
+    { order: 6, name: 'Face pull con banda', sets: 2, repMin: 12, repMax: 20, unit: 'reps', rest: '60–90 s', tecnica: 'Hala hacia la cara separando las manos.' },
+    { order: 7, name: 'Curl martillo con mancuernas', sets: 2, repMin: 10, repMax: 15, unit: 'reps', rest: '60–90 s', tecnica: 'Agarre neutro y torso quieto.' },
+    { order: 8, name: 'Extensión de tríceps sobre la cabeza', sets: 2, repMin: 10, repMax: 15, unit: 'reps', rest: '60–90 s', tecnica: 'Usa mancuerna o banda y registra variante.' },
+  ],
+  'Inferior B': [
+    { order: 1, name: 'Sentadilla goblet con talones elevados', sets: 2, repMin: 10, repMax: 15, unit: 'reps', rest: '2–3 min', tecnica: 'Recorrido controlado.' },
+    { order: 2, name: 'Zancada hacia atrás con mancuernas', sets: 2, repMin: 8, repMax: 12, unit: 'reps/pierna', rest: '2 min', tecnica: 'Registra el lado más débil.' },
+    { order: 3, name: 'Hip thrust con barra', sets: 2, repMin: 10, repMax: 15, unit: 'reps', rest: '2 min', tecnica: 'Pausa breve arriba.' },
+    { order: 4, name: 'Curl femoral con banda y tobilleras', sets: 2, repMin: 12, repMax: 20, unit: 'reps', rest: '60–90 s', tecnica: 'Registra color/combinación y posición del anclaje.' },
+    { order: 5, name: 'Elevación de pantorrillas con peso', sets: 2, repMin: 12, repMax: 20, unit: 'reps', rest: '60–90 s', tecnica: 'Estira abajo y pausa arriba.' },
+    { order: 6, name: 'Abdominal invertido', sets: 2, repMin: 10, repMax: 20, unit: 'reps', rest: '60 s', tecnica: 'Mueve la pelvis; evita usar impulso.' },
+  ],
+};
+const WARMUP_DESC = 'Caminadora 5 minutos sin fatiga.';
+const CARDIO_DESC = {
+  Cardio: 'Caminadora 30–40 min · intensidad 4–5/10 · debes poder hablar en frases.',
+  'Cardio opcional': '25–35 min suaves opcionales; si hay mucha fatiga, camina relajado.',
+};
+function buildDefaultRoutine() {
+  const out = {};
+  Object.keys(ROUTINE).forEach(plan => {
+    out[plan] = ROUTINE[plan].map((ex, i) => ({ ...ex, id: plan + '-' + (i + 1) }));
+  });
+  return out;
+}
+const MONTHS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+function addDays(date, n) { const d = new Date(date); d.setUTCDate(d.getUTCDate() + n); return d; }
+function parseISODate(str) { const [y, m, d] = str.split('-').map(Number); return new Date(Date.UTC(y, m - 1, d)); }
+function toISO(d) { return d.toISOString().slice(0, 10); }
+function fmtDate(d) { return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`; }
+function todayUTC() { const n = new Date(); return new Date(Date.UTC(n.getFullYear(), n.getMonth(), n.getDate())); }
+function avg(arr) { return arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null; }
+const ACCENT = '#9184d9', NEUTRAL = '#75798c', WARN = '#c98a8a';
+const STORAGE_KEY = 'fitness-tracker-nocturne-v1';
+
+class Component extends DCLogic {
+  state = {
+    activeTab: 'hoy', rutinaDay: 'Lunes',
+    dailyLogs: {}, exerciseSets: {}, setDrag: {},
+    customRoutine: buildDefaultRoutine(), showManageExercises: false, manageDay: 'Lunes',
+    customCardioDesc: { ...CARDIO_DESC }, dragEx: null, backSwipe: { x: 0, dragging: false },
+    exerciseDefaults: {}, exerciseSessions: {},
+    showSessionComplete: false, sessionCompleteInfo: null,
+    onboardingDone: false,
+    cfgEdad: 21, cfgSexo: 'Hombre', cfgEstatura: 1.78, cfgPesoInicial: 80, cfgCinturaInicial: 88,
+    cfgInicioPlan: '2026-08-17',
+    cfgDuracion: 16, cfgCalorias: 2450, cfgTolerancia: 150, cfgProtMin: 150, cfgProtIdeal: 160,
+    cfgSuenoMin: 7, cfgSuenoIdeal: 8,
+  };
+
+  componentDidMount() {
+    let loaded = false;
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) { this.setState(JSON.parse(raw)); loaded = true; }
+    } catch (_) {}
+    if (!loaded) this.setState(this.buildDemoData());
+    this.setState({ rutinaDay: this.props.currentDay || 'Lunes' });
+  }
+  buildDemoData() {
+    const planStart = parseISODate(this.state.cfgInicioPlan);
+    const dailyLogs = {};
+    for (let i = 0; i < 5; i++) {
+      const dk = toISO(addDays(planStart, i));
+      dailyLogs[dk] = {
+        peso: +(80 - i * 0.1).toFixed(2), cintura: +(88 - i * 0.15).toFixed(1),
+        pasos: [3200, 4500, 5100, 3900, 6000][i], sueno: [6.5, 7, 7.5, 6, 8][i],
+        calorias: [2300, 2500, 2600, 2200, 2450][i], proteina: [120, 150, 160, 90, 170][i],
+        cardioMin: [0, 0, 35, 0, 0][i], energia: [6, 7, 5, 6, 8][i],
+        notas: i === 3 ? 'Poco descanso, sesión floja.' : '',
+        dayLogged: true,
+      };
+    }
+    const exerciseSessions = {};
+    const day0 = toISO(planStart);
+    ROUTINE['Superior A'].forEach((ex, idx) => {
+      exerciseSessions[day0 + '__Superior A__' + (ex.id)] = [
+        { peso: 10 + idx, reps: 10, rir: 2, done: true },
+        { peso: 10 + idx, reps: 9, rir: 1, done: true },
+      ];
+    });
+    return { dailyLogs, exerciseSessions };
+  }
+  componentDidUpdate() {
+    try {
+      const s = this.state;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        dailyLogs: s.dailyLogs, exerciseSets: s.exerciseSets,
+        cfgEdad: s.cfgEdad, cfgSexo: s.cfgSexo, cfgEstatura: s.cfgEstatura,
+        cfgPesoInicial: s.cfgPesoInicial, cfgCinturaInicial: s.cfgCinturaInicial, cfgInicioPlan: s.cfgInicioPlan,
+        cfgDuracion: s.cfgDuracion, cfgCalorias: s.cfgCalorias, cfgTolerancia: s.cfgTolerancia,
+        cfgProtMin: s.cfgProtMin, cfgProtIdeal: s.cfgProtIdeal, cfgSuenoMin: s.cfgSuenoMin, cfgSuenoIdeal: s.cfgSuenoIdeal,
+        customRoutine: s.customRoutine, customCardioDesc: s.customCardioDesc,
+        exerciseDefaults: s.exerciseDefaults, exerciseSessions: s.exerciseSessions,
+        onboardingDone: s.onboardingDone,
+      }));
+    } catch (_) {}
+  }
+
+  getLog(dateKey) { return this.state.dailyLogs[dateKey] || {}; }
+  updateLog(dateKey, patch) {
+    this.setState(s => ({ dailyLogs: { ...s.dailyLogs, [dateKey]: { ...(s.dailyLogs[dateKey] || {}), ...patch } } }));
+  }
+
+  getRoutine(plan) {
+    return (this.state.customRoutine && this.state.customRoutine[plan]) || ROUTINE[plan];
+  }
+  updateExerciseField(plan, id, field, value) {
+    this.setState(s => ({
+      customRoutine: {
+        ...s.customRoutine,
+        [plan]: s.customRoutine[plan].map(ex => ex.id === id ? { ...ex, [field]: value } : ex),
+      },
+    }));
+  }
+  moveExercise(plan, id, dir) {
+    this.setState(s => {
+      const list = s.customRoutine[plan].slice();
+      const idx = list.findIndex(ex => ex.id === id);
+      const swapIdx = idx + dir;
+      if (swapIdx < 0 || swapIdx >= list.length) return {};
+      [list[idx], list[swapIdx]] = [list[swapIdx], list[idx]];
+      return { customRoutine: { ...s.customRoutine, [plan]: list } };
+    });
+  }
+  updateCardioDesc(plan, val) {
+    this.setState(s => ({ customCardioDesc: { ...s.customCardioDesc, [plan]: val } }));
+  }
+  onExDragStart(plan, id, e) {
+    try { e.target.setPointerCapture(e.pointerId); } catch (_) {}
+    this.setState({ dragEx: { plan, id, lastY: e.clientY } });
+  }
+  onExDragMove(e) {
+    const d = this.state.dragEx;
+    if (!d) return;
+    const ROW = 90;
+    const dy = e.clientY - d.lastY;
+    if (Math.abs(dy) >= ROW) {
+      const dir = dy > 0 ? 1 : -1;
+      this.moveExercise(d.plan, d.id, dir);
+      this.setState({ dragEx: { ...d, lastY: d.lastY + dir * ROW } });
+    }
+  }
+  onExDragEnd() {
+    this.setState({ dragEx: null });
+  }
+  onBackSwipeStart(e) {
+    if (e.clientX > 32) return;
+    this._backStartX = e.clientX;
+    try { e.target.setPointerCapture(e.pointerId); } catch (_) {}
+    this.setState({ backSwipe: { x: 0, dragging: true } });
+  }
+  onBackSwipeMove(e) {
+    if (!this.state.backSwipe.dragging || this._backStartX == null) return;
+    const dx = Math.max(0, Math.min(300, e.clientX - this._backStartX));
+    this.setState({ backSwipe: { x: dx, dragging: true } });
+  }
+  onBackSwipeEnd() {
+    const x = this.state.backSwipe.x;
+    this._backStartX = null;
+    if (x > 90) { this.setState({ showManageExercises: false, backSwipe: { x: 0, dragging: false } }); }
+    else { this.setState({ backSwipe: { x: 0, dragging: false } }); }
+  }
+  getVariante(plan, ex) {
+    return this.state.exerciseSets[plan + '__' + ex.id + '__variante'] || '';
+  }
+  setVariante(plan, ex, val) {
+    const key = plan + '__' + ex.id + '__variante';
+    this.setState({ exerciseSets: { ...this.state.exerciseSets, [key]: val } });
+  }
+  getVarianteOn(plan, ex) {
+    return !!this.state.exerciseSets[plan + '__' + ex.id + '__varianteOn'];
+  }
+  toggleVarianteOn(plan, ex) {
+    const key = plan + '__' + ex.id + '__varianteOn';
+    this.setState({ exerciseSets: { ...this.state.exerciseSets, [key]: !this.getVarianteOn(plan, ex) } });
+  }
+  getDefaults(plan, ex) {
+    return this.state.exerciseDefaults[plan + '__' + ex.id] || { pesoBySet: [], repsBySet: [], setCount: ex.sets };
+  }
+  updateDefaults(plan, ex, patch) {
+    const key = plan + '__' + ex.id;
+    this.setState(s => ({ exerciseDefaults: { ...s.exerciseDefaults, [key]: { ...(s.exerciseDefaults[key] || { pesoBySet: [], repsBySet: [], setCount: ex.sets }), ...patch } } }));
+  }
+  updateDefaultAt(plan, ex, field, idx, value) {
+    const key = plan + '__' + ex.id;
+    this.setState(s => {
+      const cur = s.exerciseDefaults[key] || { pesoBySet: [], repsBySet: [], setCount: ex.sets };
+      const arr = (cur[field] || []).slice();
+      arr[idx] = value;
+      return { exerciseDefaults: { ...s.exerciseDefaults, [key]: { ...cur, [field]: arr } } };
+    });
+  }
+  getSets(dateKey, plan, ex) {
+    const sessKey = dateKey + '__' + plan + '__' + ex.id;
+    const existing = this.state.exerciseSessions[sessKey];
+    if (existing) return existing;
+    const def = this.getDefaults(plan, ex);
+    return Array.from({ length: def.setCount }, () => ({ peso: '', reps: '', rir: '', done: false }));
+  }
+  updateSet(dateKey, plan, ex, idx, patch) {
+    const sessKey = dateKey + '__' + plan + '__' + ex.id;
+    const current = this.getSets(dateKey, plan, ex).slice();
+    current[idx] = { ...current[idx], ...patch };
+    this.setState({ exerciseSessions: { ...this.state.exerciseSessions, [sessKey]: current } });
+    if (patch.peso !== undefined && patch.peso !== '') this.updateDefaultAt(plan, ex, 'pesoBySet', idx, patch.peso);
+    if (patch.reps !== undefined && patch.reps !== '') this.updateDefaultAt(plan, ex, 'repsBySet', idx, patch.reps);
+  }
+  addSet(dateKey, plan, ex) {
+    const sessKey = dateKey + '__' + plan + '__' + ex.id;
+    const current = this.getSets(dateKey, plan, ex).slice();
+    current.push({ peso: '', reps: '', rir: '', done: false });
+    this.setState({ exerciseSessions: { ...this.state.exerciseSessions, [sessKey]: current } });
+    this.updateDefaults(plan, ex, { setCount: current.length });
+  }
+  removeSet(dateKey, plan, ex, idx) {
+    const sessKey = dateKey + '__' + plan + '__' + ex.id;
+    const current = this.getSets(dateKey, plan, ex).slice();
+    current.splice(idx, 1);
+    const drag = { ...this.state.setDrag };
+    Object.keys(drag).forEach(k => { if (k.startsWith(sessKey + '__')) delete drag[k]; });
+    this.setState({ exerciseSessions: { ...this.state.exerciseSessions, [sessKey]: current }, setDrag: drag });
+    this.updateDefaults(plan, ex, { setCount: current.length });
+  }
+  getDrag(key2) { return (this.state.setDrag && this.state.setDrag[key2]) || { x: 0, dragging: false }; }
+  onSetPointerDown(key2, e) {
+    this._dragStartX = e.clientX;
+    this._dragBaseX = this.getDrag(key2).x;
+    try { e.target.setPointerCapture(e.pointerId); } catch (_) {}
+    this.setState({ setDrag: { ...this.state.setDrag, [key2]: { x: this._dragBaseX, dragging: true } } });
+  }
+  onSetPointerMove(key2, e) {
+    if (this._dragStartX == null) return;
+    const dx = e.clientX - this._dragStartX;
+    const next = Math.max(-88, Math.min(0, this._dragBaseX + dx));
+    this.setState({ setDrag: { ...this.state.setDrag, [key2]: { x: next, dragging: true } } });
+  }
+  onSetPointerUp(dateKey, plan, ex, idx, key2) {
+    const cur = this.getDrag(key2).x;
+    this._dragStartX = null;
+    if (cur <= -60) { this.removeSet(dateKey, plan, ex, idx); }
+    else { this.setState({ setDrag: { ...this.state.setDrag, [key2]: { x: 0, dragging: false } } }); }
+  }
+  countProgress(dateKey, plan, exercises) {
+    let done = 0, total = 0;
+    exercises.forEach(ex => {
+      const sets = this.getSets(dateKey, plan, ex);
+      total += sets.length;
+      done += sets.filter(s => s.done).length;
+    });
+    return { done, total };
+  }
+  isSessionFullyDone(dateKey, plan) {
+    const pr = this.countProgress(dateKey, plan, this.getRoutine(plan));
+    return pr.total > 0 && pr.done === pr.total;
+  }
+  toggleSetDone(dateKey, plan, ex, idx) {
+    const sessKey = dateKey + '__' + plan + '__' + ex.id;
+    const current = this.getSets(dateKey, plan, ex).slice();
+    current[idx] = { ...current[idx], done: !current[idx].done };
+    this.setState({ exerciseSessions: { ...this.state.exerciseSessions, [sessKey]: current } }, () => {
+      const pr = this.countProgress(dateKey, plan, this.getRoutine(plan));
+      if (pr.total > 0 && pr.done === pr.total) {
+        this.setState({
+          showSessionComplete: true,
+          sessionCompleteInfo: { plan, exerciseCount: this.getRoutine(plan).length, setCount: pr.total },
+        });
+      }
+    });
+  }
+  closeSessionComplete() { this.setState({ showSessionComplete: false }); }
+  finishOnboarding() { this.setState({ onboardingDone: true }); }
+  kgToLb(kg) { return kg * 2.2046226218; }
+  cmToIn(cm) { return cm / 2.54; }
+  fmtWeight(kg) {
+    const units = this.props.sistemaUnidades || 'kg';
+    return units === 'lb' ? `${this.kgToLb(kg).toFixed(2)} lb` : `${kg.toFixed(2)} kg`;
+  }
+  fmtLength(cm) {
+    const units = this.props.sistemaUnidades || 'kg';
+    return units === 'lb' ? `${this.cmToIn(cm).toFixed(1)} in` : `${cm.toFixed(1)} cm`;
+  }
+
+  weekDates(planStart, w) {
+    const weekStart = addDays(planStart, (w - 1) * 7);
+    return Array.from({ length: 7 }, (_, i) => toISO(addDays(weekStart, i)));
+  }
+
+  computeWeekStats(planStart, w, cfg) {
+    const dates = this.weekDates(planStart, w);
+    const logs = dates.map(d => this.getLog(d));
+    const collect = (field) => logs.map(l => l[field]).filter(v => v != null && v !== '');
+    const pesoVals = collect('peso'), cinturaVals = collect('cintura'), pasosVals = collect('pasos');
+    const suenoVals = collect('sueno'), caloriasVals = collect('calorias'), proteinaVals = collect('proteina');
+    const cardioVals = collect('cardioMin');
+    const daysWithAny = logs.filter(l => ['peso', 'cintura', 'pasos', 'sueno', 'calorias', 'proteina', 'cardioMin'].some(f => l[f] != null && l[f] !== '')).length;
+    const metaPasos = stepGoalForWeek(w);
+    const pct = (vals, test) => vals.length ? Math.round(vals.filter(test).length / vals.length * 100) : null;
+    const pasosCumpl = pct(pasosVals, v => v >= metaPasos);
+    const suenoCumpl = pct(suenoVals, v => v >= cfg.cfgSuenoMin);
+    const caloriasCumpl = pct(caloriasVals, v => Math.abs(v - cfg.cfgCalorias) <= cfg.cfgTolerancia);
+    const proteinaCumpl = pct(proteinaVals, v => v >= cfg.cfgProtMin);
+    let fuerzaSessions = 0, fuerzaTotal = 0;
+    dates.forEach((dk, i) => {
+      const dayName = DAY_ORDER[i];
+      const dayPlan = PLAN_BY_DAY[dayName];
+      if (ROUTINE[dayPlan]) {
+        fuerzaTotal++;
+        if (this.isSessionFullyDone(dk, dayPlan)) fuerzaSessions++;
+      }
+    });
+    const fuerzaCumpl = fuerzaTotal ? Math.round(fuerzaSessions / fuerzaTotal * 100) : null;
+    const dataPoints = [pasosCumpl, suenoCumpl, caloriasCumpl, proteinaCumpl, (fuerzaTotal > 0 ? fuerzaCumpl : null)].filter(v => v != null);
+    const generalPct = dataPoints.length ? Math.round(avg(dataPoints)) : null;
+    return {
+      dates, pesoVals, cinturaVals, pasosVals, suenoVals, caloriasVals, proteinaVals, cardioVals,
+      pesoAvg: avg(pesoVals), cinturaAvg: avg(cinturaVals), pasosAvg: avg(pasosVals), suenoAvg: avg(suenoVals),
+      caloriasAvg: avg(caloriasVals), proteinaAvg: avg(proteinaVals), cardioTotal: cardioVals.length ? cardioVals.reduce((a, b) => a + b, 0) : null,
+      pasosCumpl, suenoCumpl, caloriasCumpl, proteinaCumpl, fuerzaSessions, fuerzaTotal, fuerzaCumpl, generalPct,
+      daysWithAny, registrationRate: daysWithAny / 7, metaPasos,
+    };
+  }
+
+  renderVals() {
+    const s = this.state;
+    const currentDay = this.props.currentDay || 'Lunes';
+    const showTechnique = this.props.showTechnique !== false;
+    const planStart = parseISODate(s.cfgInicioPlan);
+    const planToday = PLAN_BY_DAY[currentDay];
+    const dayIdx = DAY_ORDER.indexOf(currentDay);
+    const todayDate = addDays(planStart, dayIdx);
+    const dateKey = toISO(todayDate);
+    const log = this.getLog(dateKey);
+    const metaPasos = stepGoalForWeek(1);
+    const cfg = { cfgSuenoMin: s.cfgSuenoMin, cfgCalorias: s.cfgCalorias, cfgTolerancia: s.cfgTolerancia, cfgProtMin: s.cfgProtMin };
+
+    const pesoInicial = s.cfgPesoInicial;
+    const cinturaInicial = s.cfgCinturaInicial;
+    const pesoReg = log.peso != null, cinturaReg = log.cintura != null, pasosReg = log.pasos != null;
+    const suenoReg = log.sueno != null, caloriasReg = log.calorias != null, proteinaReg = log.proteina != null;
+    const cardioReg = log.cardioMin != null, energiaReg = log.energia != null;
+
+    const pasosPct = pasosReg ? Math.min(100, Math.round((log.pasos / metaPasos) * 100)) : 0;
+    const suenoPct = suenoReg ? Math.min(100, Math.round((log.sueno / s.cfgSuenoIdeal) * 100)) : 0;
+    const proteinaPct = proteinaReg ? Math.min(100, Math.round((log.proteina / s.cfgProtIdeal) * 100)) : 0;
+    const caloriasDelta = caloriasReg ? log.calorias - s.cfgCalorias : null;
+
+    const tabColor = id => (id === s.activeTab ? ACCENT : NEUTRAL);
+
+    const isStrengthDay = !!ROUTINE[planToday];
+    const showWarmup = isStrengthDay;
+    const isCardioDay = planToday === 'Cardio' || planToday === 'Cardio opcional';
+    const isRestDay = planToday === 'Descanso';
+    const cardioDescTodayOverride = s.customCardioDesc[planToday];
+    let exercisesList = [];
+    let progress = { done: 0, total: 0 };
+    if (isStrengthDay) {
+      const exercises = this.getRoutine(planToday);
+      progress = this.countProgress(dateKey, planToday, exercises);
+      exercisesList = exercises.map((ex, exIdx) => {
+        const def = this.getDefaults(planToday, ex);
+        const sets = this.getSets(dateKey, planToday, ex).map((set, idx) => {
+          const key2 = dateKey + '__' + planToday + '__' + ex.id + '__' + idx;
+          const drag = this.getDrag(key2);
+          const pesoPh = (def.pesoBySet && def.pesoBySet[idx] != null && def.pesoBySet[idx] !== '') ? String(def.pesoBySet[idx]) : 'kg';
+          const repsPh = (def.repsBySet && def.repsBySet[idx] != null && def.repsBySet[idx] !== '') ? String(def.repsBySet[idx]) : 'reps';
+          return {
+            label: `Serie ${idx + 1}`, peso: set.peso, reps: set.reps, rir: set.rir, done: set.done, pesoPh, repsPh,
+            btnBg: set.done ? ACCENT : 'transparent', btnBorder: set.done ? ACCENT : 'rgba(233,233,237,0.16)',
+            btnColor: set.done ? '#161826' : ACCENT,
+            onPeso: (e) => this.updateSet(dateKey, planToday, ex, idx, { peso: e.target.value }),
+            onReps: (e) => this.updateSet(dateKey, planToday, ex, idx, { reps: e.target.value }),
+            onRir: (e) => this.updateSet(dateKey, planToday, ex, idx, { rir: e.target.value }),
+            onToggle: () => this.toggleSetDone(dateKey, planToday, ex, idx),
+            dragX: drag.x, dragTransition: drag.dragging ? 'none' : 'transform 0.32s cubic-bezier(0.22,1,0.36,1)',
+            onDown: (e) => this.onSetPointerDown(key2, e),
+            onMove: (e) => this.onSetPointerMove(key2, e),
+            onUp: () => this.onSetPointerUp(dateKey, planToday, ex, idx, key2),
+          };
+        });
+        return {
+          order: exIdx + 1, name: ex.name, repRange: `${ex.repMin}–${ex.repMax} ${ex.unit}`, rest: ex.rest, tecnica: ex.tecnica, sets, showTechnique,
+          onAddSet: () => this.addSet(dateKey, planToday, ex),
+          variante: this.getVariante(planToday, ex),
+          onVarianteChange: (e) => this.setVariante(planToday, ex, e.target.value),
+          varianteOn: this.getVarianteOn(planToday, ex),
+          onToggleVariante: () => this.toggleVarianteOn(planToday, ex),
+          varianteToggleBg: this.getVarianteOn(planToday, ex) ? ACCENT : 'transparent',
+          varianteToggleBorder: this.getVarianteOn(planToday, ex) ? ACCENT : 'rgba(233,233,237,0.16)',
+          varianteKnobLeft: this.getVarianteOn(planToday, ex) ? '15px' : '1px',
+        };
+      });
+    }
+    const progressPct = progress.total ? Math.round((progress.done / progress.total) * 100) : 0;
+    const allDone = progress.total > 0 && progress.done === progress.total;
+
+    const rutinaDay = s.rutinaDay;
+    const rutinaPlan = PLAN_BY_DAY[rutinaDay];
+    const rutinaIsStrength = !!ROUTINE[rutinaPlan];
+    const rutinaShowWarmup = rutinaIsStrength;
+    const rutinaIsCardio = rutinaPlan === 'Cardio' || rutinaPlan === 'Cardio opcional';
+    const rutinaIsRest = rutinaPlan === 'Descanso';
+    const rutinaExercises = rutinaIsStrength ? this.getRoutine(rutinaPlan).map((ex, i) => ({
+      order: i + 1, name: ex.name, seriesLabel: '2 → 3+ series',
+      repRange: `${ex.repMin}–${ex.repMax} ${ex.unit}`, rest: ex.rest, tecnica: ex.tecnica, showTechnique,
+    })) : [];
+
+    // --- Manage exercises screen ---
+    const manageDay = s.manageDay;
+    const managePlan = PLAN_BY_DAY[manageDay];
+    const manageableDays = DAY_ORDER.filter(d => PLAN_BY_DAY[d] !== 'Descanso');
+    const manageDayTabs = manageableDays.map(d => ({
+      label: d.slice(0, 3), onClick: () => this.setState({ manageDay: d }),
+      color: d === manageDay ? ACCENT : NEUTRAL,
+    }));
+    const managePlanIsStrength = !!ROUTINE[managePlan];
+    const managePlanIsCardio = managePlan === 'Cardio' || managePlan === 'Cardio opcional';
+    const manageExercises = managePlanIsStrength ? this.getRoutine(managePlan).map((ex, i) => ({
+      id: ex.id, position: i + 1, name: ex.name, repMin: ex.repMin, repMax: ex.repMax, unit: ex.unit,
+      onNameChange: (e) => this.updateExerciseField(managePlan, ex.id, 'name', e.target.value),
+      onRepMinChange: (e) => this.updateExerciseField(managePlan, ex.id, 'repMin', parseInt(e.target.value) || 0),
+      onRepMaxChange: (e) => this.updateExerciseField(managePlan, ex.id, 'repMax', parseInt(e.target.value) || 0),
+      onDragStart: (e) => this.onExDragStart(managePlan, ex.id, e),
+      onDragMove: (e) => this.onExDragMove(e),
+      onDragEnd: () => this.onExDragEnd(),
+      dragging: s.dragEx && s.dragEx.id === ex.id,
+      rowOpacity: (s.dragEx && s.dragEx.id === ex.id) ? 0.55 : 1,
+    })) : [];
+    const manageCardioDesc = s.customCardioDesc[managePlan] || '';
+    const onManageCardioDescChange = (e) => this.updateCardioDesc(managePlan, e.target.value);
+    const dayTabs = DAY_ORDER.map(d => ({
+      day: d, short: d.slice(0, 3), color: d === rutinaDay ? ACCENT : NEUTRAL,
+      onClick: () => this.setState({ rutinaDay: d }),
+    }));
+
+    // --- Panel: week 1 stats + recommendation ---
+    const w1 = this.computeWeekStats(planStart, 1, cfg);
+    const pesoTagFor = (n) => n === 0 ? 'Sin datos' : n <= 2 ? 'Promedio provisional' : 'Promedio semanal';
+    const p_pesoVal = w1.pesoAvg != null ? this.fmtWeight(w1.pesoAvg) : '—';
+    const p_pesoTag = pesoTagFor(w1.pesoVals.length);
+    const p_pesoRegistros = `${w1.pesoVals.length}/7 registros`;
+    const cinturaTagFor = (n) => n === 0 ? 'Sin datos' : n === 1 ? 'Provisional' : 'Promedio semanal';
+    const p_cinturaVal = w1.cinturaAvg != null ? this.fmtLength(w1.cinturaAvg) : '—';
+    const p_cinturaTag = cinturaTagFor(w1.cinturaVals.length);
+    const p_cinturaRegistros = `${w1.cinturaVals.length}/3 mediciones`;
+    const p_pasosVal = w1.pasosAvg != null ? Math.round(w1.pasosAvg) : '—';
+    const p_pasosCumpl = w1.pasosCumpl != null ? `${w1.pasosCumpl}% cumplimiento` : '—';
+    const p_pasosRegistros = `${w1.pasosVals.length}/7 registros`;
+    const p_suenoVal = w1.suenoAvg != null ? `${w1.suenoAvg.toFixed(1)} h` : '—';
+    const p_suenoRegistros = `${w1.suenoVals.length}/7 registros`;
+    const p_caloriasVal = w1.caloriasAvg != null ? `${Math.round(w1.caloriasAvg)} kcal` : '—';
+    const p_caloriasCumpl = w1.caloriasCumpl != null ? `${w1.caloriasCumpl}%` : '—';
+    const p_caloriasRegistros = `${w1.caloriasVals.length}/7 registros`;
+    const p_proteinaVal = w1.proteinaAvg != null ? `${Math.round(w1.proteinaAvg)} g` : '—';
+    const p_proteinaCumpl = w1.proteinaCumpl != null ? `${w1.proteinaCumpl}% ≥ mín` : '—';
+    const p_proteinaRegistros = `${w1.proteinaVals.length}/7 registros`;
+    const p_fuerzaVal = `${w1.fuerzaSessions}/${w1.fuerzaTotal} sesiones`;
+    const p_cardioVal = w1.cardioTotal != null ? `${w1.cardioTotal} min` : 'Sin registrar';
+    const insufficientData = w1.registrationRate < 0.8 || w1.daysWithAny === 0;
+    const p_generalVal = w1.daysWithAny === 0 ? 'Sin datos' : (insufficientData ? 'Datos insuficientes' : (w1.generalPct != null ? `${w1.generalPct}%` : 'Datos insuficientes'));
+    const p_generalColor = w1.daysWithAny === 0 ? NEUTRAL : (insufficientData ? WARN : ACCENT);
+    const p_generalTag = w1.daysWithAny === 0 ? 'Sin datos' : (insufficientData ? `${w1.daysWithAny}/7 días registrados` : 'Semana en curso');
+    let p_recomendacion;
+    if (w1.daysWithAny === 0) p_recomendacion = 'Necesitamos más datos: registra al menos un día para empezar a calcular tu progreso.';
+    else if (w1.registrationRate < 0.8) p_recomendacion = `Mejora la constancia: solo ${w1.daysWithAny}/7 días registrados esta semana.`;
+    else p_recomendacion = 'Continúa igual — es tu primera semana completa, aún no se recomiendan cambios.';
+
+    const weeksTable = [];
+    weeksTable.push({ label: 'Base', dateLabel: fmtDate(planStart), peso: this.fmtWeight(pesoInicial), cintura: this.fmtLength(cinturaInicial), cumplimiento: '—', estado: 'Referencia', estadoColor: NEUTRAL });
+    const realToday = todayUTC();
+    for (let w = 1; w <= s.cfgDuracion; w++) {
+      const weekStart = addDays(planStart, (w - 1) * 7);
+      const weekEnd = addDays(weekStart, 6);
+      const stats = this.computeWeekStats(planStart, w, cfg);
+      let estado, estadoColor;
+      if (realToday < planStart) { estado = 'Aún no inicia'; estadoColor = NEUTRAL; }
+      else if (realToday < weekStart) { estado = 'Programada'; estadoColor = NEUTRAL; }
+      else if (realToday <= weekEnd) { estado = 'En progreso'; estadoColor = ACCENT; }
+      else if (stats.daysWithAny < 4) { estado = 'Datos insuficientes'; estadoColor = WARN; }
+      else { estado = stats.generalPct != null ? `${stats.generalPct}% cumplimiento` : 'Datos insuficientes'; estadoColor = stats.generalPct != null ? ACCENT : WARN; }
+      weeksTable.push({
+        label: String(w), dateLabel: fmtDate(weekStart),
+        peso: stats.pesoAvg != null ? this.fmtWeight(stats.pesoAvg) : '—',
+        cintura: stats.cinturaAvg != null ? this.fmtLength(stats.cinturaAvg) : '—',
+        cumplimiento: stats.generalPct != null ? `${stats.generalPct}%` : '—',
+        estado, estadoColor,
+      });
+    }
+
+    return {
+      activeTab: s.activeTab,
+      isOnboarding: !s.onboardingDone,
+      isHoy: s.onboardingDone && s.activeTab === 'hoy' && !s.showManageExercises && !s.showSessionComplete,
+      isEntrenamiento: s.onboardingDone && s.activeTab === 'entrenamiento' && !s.showManageExercises && !s.showSessionComplete,
+      isRutina: s.onboardingDone && s.activeTab === 'rutina' && !s.showManageExercises && !s.showSessionComplete,
+      isPanel: s.onboardingDone && s.activeTab === 'panel' && !s.showManageExercises && !s.showSessionComplete,
+      isConfig: s.onboardingDone && s.activeTab === 'config' && !s.showManageExercises && !s.showSessionComplete,
+      isManageExercises: s.onboardingDone && s.showManageExercises && !s.showSessionComplete,
+      isSessionComplete: s.onboardingDone && s.showSessionComplete,
+      showTabBar: s.onboardingDone && !s.showManageExercises && !s.showSessionComplete,
+      showHeader: s.onboardingDone && !s.showSessionComplete,
+      onFinishOnboarding: () => this.finishOnboarding(),
+      onOpenManageExercises: () => this.setState({ showManageExercises: true }),
+      onCloseManageExercises: () => this.setState({ showManageExercises: false }),
+      onCloseSessionComplete: () => this.closeSessionComplete(),
+      sc_planLabel: s.sessionCompleteInfo ? s.sessionCompleteInfo.plan : '',
+      sc_exerciseCount: s.sessionCompleteInfo ? s.sessionCompleteInfo.exerciseCount : 0,
+      sc_setCount: s.sessionCompleteInfo ? s.sessionCompleteInfo.setCount : 0,
+      manageDayTabs, manageExercises, managePlanLabel: managePlan,
+      managePlanIsStrength, managePlanIsCardio, manageCardioDesc, onManageCardioDescChange,
+      backSwipeX: s.backSwipe.x, backSwipeTransition: s.backSwipe.dragging ? 'none' : 'transform 0.32s cubic-bezier(0.22,1,0.36,1)',
+      onBackSwipeStart: (e) => this.onBackSwipeStart(e),
+      onBackSwipeMove: (e) => this.onBackSwipeMove(e),
+      onBackSwipeEnd: () => this.onBackSwipeEnd(),
+      setTabHoy: () => this.setState({ activeTab: 'hoy' }),
+      setTabEntrenamiento: () => this.setState({ activeTab: 'entrenamiento' }),
+      setTabRutina: () => this.setState({ activeTab: 'rutina' }),
+      setTabPanel: () => this.setState({ activeTab: 'panel' }),
+      setTabConfig: () => this.setState({ activeTab: 'config' }),
+      hoyColor: tabColor('hoy'), entrenamientoColor: tabColor('entrenamiento'),
+      rutinaColor: tabColor('rutina'), panelColor: tabColor('panel'), configColor: tabColor('config'),
+
+      currentDay, planToday, todayDateLabel: fmtDate(todayDate), weekLabel: 'Semana 1',
+
+      pesoVal: pesoReg ? this.fmtWeight(log.peso) : 'Sin registrar',
+      onPesoDec: () => this.updateLog(dateKey, { peso: Math.max(30, +((log.peso ?? pesoInicial) - 0.05).toFixed(2)) }),
+      onPesoInc: () => this.updateLog(dateKey, { peso: Math.min(200, +((log.peso ?? pesoInicial) + 0.05).toFixed(2)) }),
+      cinturaVal: cinturaReg ? this.fmtLength(log.cintura) : 'Sin registrar',
+      onCinturaDec: () => this.updateLog(dateKey, { cintura: Math.max(40, +((log.cintura ?? cinturaInicial) - 0.5).toFixed(1)) }),
+      onCinturaInc: () => this.updateLog(dateKey, { cintura: Math.min(160, +((log.cintura ?? cinturaInicial) + 0.5).toFixed(1)) }),
+      pasosVal: pasosReg ? log.pasos : '', metaPasos, pasosPct,
+      onPasosInput: (e) => this.updateLog(dateKey, { pasos: e.target.value === '' ? null : (parseInt(e.target.value) || 0) }),
+      onPasosDec: () => this.updateLog(dateKey, { pasos: Math.max(0, (log.pasos ?? 0) - 500) }),
+      onPasosInc: () => this.updateLog(dateKey, { pasos: (log.pasos ?? 0) + 500 }),
+      suenoVal: suenoReg ? `${log.sueno} h` : 'Sin registrar', suenoIdeal: s.cfgSuenoIdeal, suenoPct,
+      onSuenoDec: () => this.updateLog(dateKey, { sueno: Math.max(0, +((log.sueno ?? s.cfgSuenoIdeal) - 0.5).toFixed(1)) }),
+      onSuenoInc: () => this.updateLog(dateKey, { sueno: Math.min(14, +((log.sueno ?? s.cfgSuenoIdeal) + 0.5).toFixed(1)) }),
+      caloriasVal: caloriasReg ? log.calorias : '', caloriasObjetivo: s.cfgCalorias,
+      caloriasDisplayVal: caloriasReg ? `${log.calorias} kcal` : 'Sin registrar',
+      caloriasDeltaLabel: caloriasReg ? `${caloriasDelta >= 0 ? '+' : ''}${caloriasDelta} kcal` : 'Sin registrar',
+      onCaloriasChange: (e) => this.updateLog(dateKey, { calorias: e.target.value === '' ? null : (parseInt(e.target.value) || 0) }),
+      proteinaVal: proteinaReg ? `${log.proteina} g` : 'Sin registrar', proteinaIdeal: s.cfgProtIdeal, proteinaPct,
+      onProteinaDec: () => this.updateLog(dateKey, { proteina: Math.max(0, (log.proteina ?? 0) - 10) }),
+      onProteinaInc: () => this.updateLog(dateKey, { proteina: (log.proteina ?? 0) + 10 }),
+      cardioMinVal: cardioReg ? `${log.cardioMin} min` : 'Sin registrar',
+      onCardioDec: () => this.updateLog(dateKey, { cardioMin: Math.max(0, (log.cardioMin ?? 0) - 5) }),
+      onCardioInc: () => this.updateLog(dateKey, { cardioMin: (log.cardioMin ?? 0) + 5 }),
+      energiaVal: energiaReg ? `${log.energia}/10` : 'Sin registrar',
+      onEnergiaDec: () => this.updateLog(dateKey, { energia: Math.max(1, (log.energia ?? 5) - 1) }),
+      onEnergiaInc: () => this.updateLog(dateKey, { energia: Math.min(10, (log.energia ?? 5) + 1) }),
+      notasVal: log.notas ?? '', onNotasChange: (e) => this.updateLog(dateKey, { notas: e.target.value }),
+      dayLoggedLabel: log.dayLogged ? 'Registrado ✓' : 'Marcar día como registrado',
+      toggleDayLogged: () => this.updateLog(dateKey, { dayLogged: !log.dayLogged }),
+      fuerzaLabel: allDone ? 'Fuerza: completada' : (progress.total ? `Fuerza: ${progress.done}/${progress.total} series` : 'Fuerza: sin sesión hoy'),
+      fuerzaColor: allDone ? ACCENT : NEUTRAL,
+
+      isStrengthDay, isCardioDay, isRestDay, showWarmup, warmupDesc: WARMUP_DESC,
+      cardioDescToday: cardioDescTodayOverride || CARDIO_DESC[planToday] || '',
+      exercisesList, progressPct, progressDoneLabel: `${progress.done}/${progress.total} series completadas`,
+
+      dayTabs, rutinaDay, rutinaPlanLabel: rutinaPlan,
+      rutinaIsStrength, rutinaIsCardio, rutinaIsRest, rutinaExercises, rutinaShowWarmup, warmupDescRutina: WARMUP_DESC,
+      rutinaCardioDesc: s.customCardioDesc[rutinaPlan] || CARDIO_DESC[rutinaPlan] || '',
+
+      weekActualLabel: 'Semana 1 de ' + s.cfgDuracion,
+      p_pesoVal, p_pesoTag, p_pesoRegistros, p_cinturaVal, p_cinturaTag, p_cinturaRegistros,
+      p_pasosVal, p_pasosCumpl, p_pasosRegistros, p_suenoVal, p_suenoRegistros,
+      p_caloriasVal, p_caloriasCumpl, p_caloriasRegistros, p_tolerancia: s.cfgTolerancia,
+      p_proteinaVal, p_proteinaCumpl, p_proteinaRegistros, p_protMin: s.cfgProtMin,
+      p_fuerzaVal, p_cardioVal, p_generalVal, p_generalColor, p_generalTag, p_recomendacion,
+      weeksTable,
+
+      cfgEdad: s.cfgEdad, onCfgEdad: (e) => this.setState({ cfgEdad: parseInt(e.target.value) || 0 }),
+      cfgSexo: s.cfgSexo,
+      cfgSexoHombreColor: s.cfgSexo === 'Hombre' ? ACCENT : 'rgba(233,233,237,0.55)',
+      cfgSexoHombreBg: s.cfgSexo === 'Hombre' ? 'rgba(145,132,217,0.15)' : 'transparent',
+      cfgSexoMujerColor: s.cfgSexo === 'Mujer' ? ACCENT : 'rgba(233,233,237,0.55)',
+      cfgSexoMujerBg: s.cfgSexo === 'Mujer' ? 'rgba(145,132,217,0.15)' : 'transparent',
+      onCfgSexoHombre: () => this.setState({ cfgSexo: 'Hombre' }), onCfgSexoMujer: () => this.setState({ cfgSexo: 'Mujer' }),
+      cfgEstatura: s.cfgEstatura.toFixed(2),
+      onCfgEstaturaDec: () => this.setState({ cfgEstatura: Math.max(1.4, +(s.cfgEstatura - 0.01).toFixed(2)) }),
+      onCfgEstaturaInc: () => this.setState({ cfgEstatura: Math.min(2.1, +(s.cfgEstatura + 0.01).toFixed(2)) }),
+      cfgPesoInicial: s.cfgPesoInicial, cfgPesoInicialLabel: this.fmtWeight(s.cfgPesoInicial),
+      onCfgPesoInicialDec: () => this.setState({ cfgPesoInicial: Math.max(30, +(s.cfgPesoInicial - 0.5).toFixed(1)) }),
+      onCfgPesoInicialInc: () => this.setState({ cfgPesoInicial: Math.min(200, +(s.cfgPesoInicial + 0.5).toFixed(1)) }),
+      cfgCinturaInicial: s.cfgCinturaInicial, cfgCinturaInicialLabel: this.fmtLength(s.cfgCinturaInicial),
+      onCfgCinturaInicialDec: () => this.setState({ cfgCinturaInicial: Math.max(40, +(s.cfgCinturaInicial - 0.5).toFixed(1)) }),
+      onCfgCinturaInicialInc: () => this.setState({ cfgCinturaInicial: Math.min(160, +(s.cfgCinturaInicial + 0.5).toFixed(1)) }),
+      cfgDuracion: s.cfgDuracion, onCfgDuracion: (e) => this.setState({ cfgDuracion: parseInt(e.target.value) || 16 }),
+      cfgCalorias: s.cfgCalorias, onCfgCalorias: (e) => this.setState({ cfgCalorias: parseInt(e.target.value) || 0 }),
+      cfgTolerancia: s.cfgTolerancia, onCfgTolerancia: (e) => this.setState({ cfgTolerancia: parseInt(e.target.value) || 0 }),
+      cfgProtMin: s.cfgProtMin, onCfgProtMin: (e) => this.setState({ cfgProtMin: parseInt(e.target.value) || 0 }),
+      cfgProtIdeal: s.cfgProtIdeal, onCfgProtIdeal: (e) => this.setState({ cfgProtIdeal: parseInt(e.target.value) || 0 }),
+      cfgSuenoMin: s.cfgSuenoMin,
+      onCfgSuenoMinDec: () => this.setState({ cfgSuenoMin: Math.max(4, +(s.cfgSuenoMin - 0.5).toFixed(1)) }),
+      onCfgSuenoMinInc: () => this.setState({ cfgSuenoMin: Math.min(10, +(s.cfgSuenoMin + 0.5).toFixed(1)) }),
+      cfgSuenoIdeal: s.cfgSuenoIdeal,
+      onCfgSuenoIdealDec: () => this.setState({ cfgSuenoIdeal: Math.max(4, +(s.cfgSuenoIdeal - 0.5).toFixed(1)) }),
+      onCfgSuenoIdealInc: () => this.setState({ cfgSuenoIdeal: Math.min(10, +(s.cfgSuenoIdeal + 0.5).toFixed(1)) }),
+      inicioPlanLabel: fmtDate(planStart),
+      cfgInicioPlan: s.cfgInicioPlan, onCfgInicioPlan: (e) => this.setState({ cfgInicioPlan: e.target.value }),
+    };
+  }
+}
+</script>
+</body>
+</html>
