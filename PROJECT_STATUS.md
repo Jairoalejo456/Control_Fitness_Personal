@@ -671,3 +671,32 @@ el dispositivo físico (solo se validó el cálculo, no la geometría final en p
 — queda pendiente la confirmación visual del usuario en su iPhone tras este deploy,
 revisando que `--app-height` en el panel de Diagnóstico ahora diga `874px` (antes
 `812px`).
+
+### 2026-08-15 — La teoría del "descuento fijo del Dynamic Island" era falsa: medición inestable al arrancar, no un offset constante
+
+El usuario probó el fix anterior (sumar `--safe-top` al alto medido) y mandó una
+captura nueva del panel de Diagnóstico. Esta vez:
+
+```
+window: 402×874        visualViewport: 402×874        (antes: 812×812)
+--app-height: 936px     (antes: 812px, con el fix: 874px — correcto esa vez)
+```
+
+**El mismo iPhone, en dos aperturas distintas de la app, midió alturas diferentes**
+(812 la primera vez, 874 la segunda) antes de aplicar ningún fix. Eso tira por la
+borda la teoría anterior de que Safari standalone "siempre resta 62px fijos del
+Dynamic Island" — no es un offset constante, es que la medición de
+`visualViewport.height`/`window.innerHeight` a veces se toma **antes de que el
+WebView standalone termine de expandirse** a su tamaño final justo al arrancar
+(un instante de resize interno propio de iOS). El fix anterior sumaba 62px
+siempre, así que cuando la medición ya venía correcta (874, como en esta segunda
+prueba), la dejaba en 936 — sobre-corrigiendo un problema que esa vez no existía.
+
+**Fix correcto**: se quitó por completo la suma manual de `--safe-top`.
+`useViewportHeightFix.ts` ahora solo vuelve a medir (`visualViewport.height` /
+`window.innerHeight`, sin ninguna aritmética propia) varias veces en los primeros
+1000ms tras montar (50/200/500/1000ms) para capturar el valor ya asentado, además
+de seguir escuchando `resize`/`orientationchange`/eventos de `visualViewport` para
+cualquier cambio posterior. Verificado con Playwright que ya no hay ninguna
+sobre-corrección: el `--app-height` sigue exactamente la medición real en todo
+momento, sea cual sea.
