@@ -150,6 +150,59 @@ cuenta de desarrollador: no hay atajo gratuito en iOS para eso — es una restri
 Apple, no de Expo. La alternativa sin pagar sería volver a EAS Update (opción 2, dentro
 de Expo Go) o pagar la cuenta de $99/año para distribución permanente vía TestFlight.
 
+## Versión web / PWA (además de la app nativa)
+
+Como Expo trae soporte web integrado (react-native-web + Expo Router), se agregó una
+**segunda forma de usar la misma app, sin tocar Xcode**: una PWA (Progressive Web App)
+desplegable en Vercel. Es el mismo código fuente — no hay dos proyectos ni dos bases de
+código, solo un target de build adicional (`--platform web`).
+
+**Por qué se hizo**: el usuario pidió una forma de actualizar la app más parecida a una
+web normal (editar → publicar → recargar), sin el proceso de recompilar con Xcode cada
+vez. La PWA cubre eso — cualquier cambio de código se refleja con un redeploy en Vercel
+y un refresh del navegador, sin cable, sin Xcode, sin esperar 7 días. La app nativa
+(instalada vía Xcode) sigue siendo la opción "offline-first"/con ícono en el dock del
+sistema; ahora conviven las dos.
+
+**Adaptaciones necesarias para que funcione bien en web** (los módulos nativos de Expo
+no todos tienen implementación web):
+- `@react-native-community/datetimepicker` no existe en web → se creó
+  `src/components/ui/HtmlDateInput.tsx` (un `<input type="date">` HTML real vía
+  `createElement`, no JSX, para no pelear con los tipos DOM en un proyecto RN) y se usa
+  como rama `Platform.OS === 'web'` en `DatePickerField.tsx` y `DailyLogDateHeader.tsx`.
+- `expo-file-system` es un stub vacío en web (`console.warn` y ya) → `src/services/backup.ts`
+  ahora tiene una función unificada `exportBackup()` que en web dispara una descarga de
+  archivo directa (Blob + `<a download>`), y en iOS/Android sigue usando
+  `expo-sharing`. `pickAndImportFile()` en web lee el `File` del navegador directo
+  (viene en `asset.file` desde `expo-document-picker`, que sí tiene shim web).
+- `Alert.alert` de React Native es **no-op en react-native-web** (no hace nada, ni
+  siquiera un warning) → se creó `src/utils/platformAlert.ts` (`confirmAsync`/`notify`)
+  que usa `window.confirm`/`window.alert` en web y `Alert.alert` nativo en
+  iOS/Android. `BackupCard.tsx` se actualizó para usar esto — antes, el diálogo de
+  confirmación de "Importar" simplemente no aparecía en web.
+
+**PWA instalable**: se agregó `public/manifest.json` (nombre, colores, íconos) y
+`src/app/+html.tsx` (documento HTML raíz de Expo Router para web — ahí van los meta
+tags de `theme-color`, `apple-mobile-web-app-capable`, `apple-touch-icon`, link al
+manifest). Los íconos (incluye un ícono nuevo de mancuerna con los colores de la app,
+pedido por el usuario) se generaron con un SVG propio rasterizado vía `cairosvg`
+(`assets/images/icon.png` y variantes, más `public/icons/*` para la PWA) — reemplazó el
+ícono genérico de Expo que traía el template. Este mismo ícono también quedó como el de
+la app nativa de Xcode (un solo set de assets para ambas).
+
+**Verificado**: `expo export --platform web` compila sin errores, se sirvió localmente
+y se probó con Playwright (captura de Onboarding/Hoy/Panel, sin errores de consola) —
+coincide visualmente con el diseño original.
+
+**Despliegue en Vercel — pendiente, lo hace el usuario desde su navegador** (no
+requiere terminal ni Xcode, a diferencia del flujo nativo): se agregó `vercel.json`
+(`buildCommand: npm run build:web`, `outputDirectory: dist`) y el script
+`npm run build:web` en `package.json`. El usuario debe entrar a vercel.com, crear
+cuenta gratis, "Add New Project" → importar el repo de GitHub
+`Jairoalejo456/Control_Fitness_Personal` (rama `claude/github-connection-tq25hr`) →
+Vercel detecta `vercel.json` solo → Deploy. Cada push nuevo a esa rama re-despliega
+solo (si se conecta con auto-deploy activado, que es el default de Vercel).
+
 ## Qué falta / posibles siguientes pasos
 
 - [x] **App nativa instalada y funcionando en el iPhone real del usuario** (ver
@@ -167,6 +220,8 @@ de Expo Go) o pagar la cuenta de $99/año para distribución permanente vía Tes
 - [ ] Nada más está pendiente del alcance original — las 9 fases del plan inicial
       (setup, datos/lógica, onboarding/config, Hoy, Entreno/Sesión completada,
       Rutina/Administrar ejercicios, Panel, respaldo, pulido) están completas.
+- [ ] **PWA lista en el código, falta que el usuario la conecte a Vercel** (ver sección
+      "Versión web / PWA" arriba) — es un flujo de solo navegador, no necesita Mac.
 
 ## Bitácora de cambios
 

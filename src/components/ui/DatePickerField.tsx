@@ -1,8 +1,9 @@
-import { Platform, StyleSheet, Text, View } from 'react-native';
+import { Platform } from 'react-native';
 
-import { colors, radii, typography } from '@/theme/tokens';
-import { formatDisplayDate, formatISODate } from '@/logic/dateUtils';
+import { colors } from '@/theme/tokens';
+import { formatISODate } from '@/logic/dateUtils';
 import type { ISODateString } from '@/types/models';
+import { HtmlDateInput } from './HtmlDateInput';
 
 type Props = {
   value: ISODateString;
@@ -12,12 +13,12 @@ type Props = {
 
 export function DatePickerField({ value, onChange, maximumDate }: Props) {
   if (Platform.OS === 'web') {
-    // El selector nativo de iOS/Android no tiene equivalente en web; se muestra de solo lectura
-    // — la verificación real de este campo se hace en Expo Go sobre el iPhone.
     return (
-      <View style={styles.field}>
-        <Text style={styles.fieldText}>{formatDisplayDate(value)}</Text>
-      </View>
+      <HtmlDateInput
+        value={value}
+        onChange={onChange}
+        max={maximumDate ? formatISODate(maximumDate) : undefined}
+      />
     );
   }
 
@@ -40,14 +41,3 @@ export function DatePickerField({ value, onChange, maximumDate }: Props) {
     />
   );
 }
-
-const styles = StyleSheet.create({
-  field: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radii.buttonSm,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-  },
-  fieldText: { ...typography.body },
-});

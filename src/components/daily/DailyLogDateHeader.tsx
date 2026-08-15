@@ -4,6 +4,7 @@ import { Platform, StyleSheet, Text, View } from 'react-native';
 
 import { colors, spacing, typography } from '@/theme/tokens';
 import { PressableScale } from '@/components/ui/PressableScale';
+import { HtmlDateInput } from '@/components/ui/HtmlDateInput';
 import { addDaysISO, formatDisplayDate, isFutureDate, todayISO } from '@/logic/dateUtils';
 import type { ISODateString } from '@/types/models';
 
@@ -44,6 +45,10 @@ export function DailyLogDateHeader({ selectedDate, onChangeDate }: Props) {
         <PressableScale onPress={() => onChangeDate(todayISO())}>
           <Text style={styles.backToToday}>Volver a hoy</Text>
         </PressableScale>
+      ) : null}
+
+      {showPicker && Platform.OS === 'web' ? (
+        <HtmlDateInput value={selectedDate} onChange={onChangeDate} max={todayISO()} />
       ) : null}
 
       {showPicker && DateTimePicker ? (

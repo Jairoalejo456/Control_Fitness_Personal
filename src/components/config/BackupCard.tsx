@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Alert, StyleSheet, Text } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 
 import { Card, CardKicker } from '@/components/ui/Card';
 import { ChevronRow } from '@/components/ui/ChevronRow';
-import { exportToFile, pickAndImportFile, shareExportedFile } from '@/services/backup';
+import { exportBackup, pickAndImportFile } from '@/services/backup';
+import { confirmAsync, notify } from '@/utils/platformAlert';
 import { colors, typography } from '@/theme/tokens';
 
 export function BackupCard() {
@@ -12,40 +13,33 @@ export function BackupCard() {
   const handleExport = async () => {
     setBusy(true);
     try {
-      const fileUri = await exportToFile();
-      await shareExportedFile(fileUri);
+      await exportBackup();
     } catch (error) {
-      Alert.alert('No se pudo exportar', error instanceof Error ? error.message : 'Intenta de nuevo.');
+      notify('No se pudo exportar', error instanceof Error ? error.message : 'Intenta de nuevo.');
     } finally {
       setBusy(false);
     }
   };
 
-  const handleImport = () => {
-    Alert.alert(
+  const handleImport = async () => {
+    const confirmed = await confirmAsync(
       'Importar datos',
       'Esto reemplazará todos los datos actuales de la app con los del archivo que elijas. ¿Continuar?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Importar',
-          style: 'destructive',
-          onPress: async () => {
-            setBusy(true);
-            try {
-              const result = await pickAndImportFile();
-              if (!result.ok && result.error !== 'cancelado') {
-                Alert.alert('No se pudo importar', result.error ?? 'Intenta de nuevo.');
-              } else if (result.ok) {
-                Alert.alert('Listo', 'Tus datos se restauraron correctamente.');
-              }
-            } finally {
-              setBusy(false);
-            }
-          },
-        },
-      ],
+      'Importar',
     );
+    if (!confirmed) return;
+
+    setBusy(true);
+    try {
+      const result = await pickAndImportFile();
+      if (!result.ok && result.error !== 'cancelado') {
+        notify('No se pudo importar', result.error ?? 'Intenta de nuevo.');
+      } else if (result.ok) {
+        notify('Listo', 'Tus datos se restauraron correctamente.');
+      }
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
