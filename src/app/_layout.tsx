@@ -14,6 +14,7 @@ import {
 
 import { colors } from '@/theme/tokens';
 import { useAppStore } from '@/store/appStore';
+import { useAutoUpdate } from '@/hooks/useAutoUpdate';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -26,6 +27,8 @@ export default function RootLayout() {
   });
   const hasHydrated = useAppStore((state) => state._hasHydrated);
   const onboardingDone = useAppStore((state) => state.onboardingDone);
+
+  useAutoUpdate();
 
   const ready = fontsLoaded && hasHydrated;
 

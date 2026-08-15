@@ -6,6 +6,8 @@ node_modules/
 # Expo
 .expo/
 dist/
+src/generatedVersion.ts
+public/version.json
 web-build/
 expo-env.d.ts
 

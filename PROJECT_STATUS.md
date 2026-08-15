@@ -241,20 +241,24 @@ dos ajustes primero.
 - [x] **App nativa instalada y funcionando en el iPhone real del usuario** (ver
       bitácora 2026-08-14/15) — confirmado que abre y funciona sin Mac, wifi, ni
       Expo Go de por medio (build Release con JS embebido).
+- [x] **PWA desplegada y funcionando en producción en Vercel** (ver sección "Versión
+      web / PWA" y bitácora correspondiente).
+- **Decisión 2026-08-15: de ahora en adelante el desarrollo se enfoca solo en la
+  PWA.** El usuario decidió dejar de lado el flujo nativo por Xcode (recompilar cada
+  7 días con cuenta Apple gratis era la fricción principal) — la PWA en Vercel es
+  ahora el único canal de distribución activo. El código de la app nativa (carpeta
+  `ios/` si se genera, `ios.bundleIdentifier` en `app.json`) queda intacto en el
+  repo por si se retoma en el futuro, pero no se le sigue dando soporte activo ni se
+  espera que el usuario vuelva a correr `expo run:ios`. Si se retoma, la sección
+  "Camino elegido: app nativa real vía Xcode" más abajo sigue siendo válida como
+  referencia histórica de cómo se hizo.
 - [ ] Probar a fondo el uso diario real: registrar días completos, marcar sesiones de
       fuerza, ver que el Panel calcule bien con datos reales (todo lo hecho hasta
-      ahora se verificó con `tsc`, `jest`, y `expo export --platform web`, más esta
-      instalación real — falta uso prolongado para detectar detalles de UX).
-- [ ] **Recordatorio importante para el usuario**: con cuenta Apple gratis, la app
-      instalada expira cada 7 días — hay que repetir
-      `npx expo run:ios --device --configuration Release` desde el Mac para renovarla
-      (ver sección "Camino elegido" más abajo). Recomendado exportar un respaldo JSON
-      desde Configuración antes de cada renovación, por seguridad.
+      ahora se verificó con `tsc`, `jest`, y `expo export --platform web` — falta uso
+      prolongado para detectar detalles de UX).
 - [ ] Nada más está pendiente del alcance original — las 9 fases del plan inicial
       (setup, datos/lógica, onboarding/config, Hoy, Entreno/Sesión completada,
       Rutina/Administrar ejercicios, Panel, respaldo, pulido) están completas.
-- [ ] **PWA lista en el código, falta que el usuario la conecte a Vercel** (ver sección
-      "Versión web / PWA" arriba) — es un flujo de solo navegador, no necesita Mac.
 
 ## Bitácora de cambios
 
@@ -388,3 +392,57 @@ animación básica al cambiar de tab. Cambios:
   próximo deploy de Vercel; la app nativa instalada en el iPhone necesita un nuevo
   `npx expo run:ios --device --configuration Release` desde el Mac para incluirlos
   (no se actualiza sola).
+
+### 2026-08-15 — Enfoque exclusivo en PWA + auto-actualización al abrir
+
+El usuario decidió que de ahora en adelante **solo se trabaja sobre la PWA** (ver
+nota en "Qué falta" más arriba) y pidió que la app se actualice sola cada vez que la
+abre en el iPhone, sin tener que hacer nada manual (ni un pull-to-refresh, ni
+reinstalar). Se implementó un mecanismo de detección de versión + recarga
+automática, sin usar Service Worker (se evitó a propósito por la complejidad extra
+de invalidación de caché que trae, innecesaria para una PWA sin soporte offline):
+
+- **`scripts/generate-version.js`**: en cada build (`npm run build:web`, y también
+  vía `postinstall` después de `npm install`) genera un timestamp ISO único y lo
+  escribe en dos lugares: `src/generatedVersion.ts` (constante `APP_VERSION`,
+  queda **embebida dentro del bundle JS** en tiempo de build) y `public/version.json`
+  (archivo estático que Expo copia a `dist/version.json`, o sea que queda servido en
+  producción como `/version.json`, **fuera** del bundle JS). Ambos archivos están en
+  `.gitignore` — se regeneran solos, no se commitean.
+- **`src/hooks/useAutoUpdate.ts`** (nuevo, solo corre en `Platform.OS === 'web'`): al
+  montar la app, y cada vez que la pestaña/PWA vuelve a primer plano
+  (`visibilitychange` + `focus`), hace `fetch('/version.json', {cache: 'no-store'})`
+  y compara contra el `APP_VERSION` embebido en el bundle que ya está corriendo. Si
+  no coinciden (o sea, hay un deploy más nuevo en el servidor), hace
+  `window.location.reload()`. Conectado en `src/app/_layout.tsx` con
+  `useAutoUpdate()`.
+- **Guard contra bucle de recarga infinito** (bug real encontrado y corregido
+  durante las pruebas): la primera versión de `checkForUpdate` recargaba sin
+  condición alguna cada vez que detectaba una diferencia — en pruebas con
+  Playwright esto causó **9 recargas en cadena** cuando el `version.json` cambiaba
+  pero el bundle JS servido seguía siendo el viejo (ej. mientras un deploy de Vercel
+  todavía está propagando). Se corrigió guardando en `sessionStorage` qué versión ya
+  se intentó alcanzar (`cf-personal-pending-update-version`): si tras recargar
+  sigue sin coincidir la misma versión, no se reintenta en bucle — se espera al
+  próximo evento de foco/visibilidad. Verificado con un test de Playwright que
+  simula un deploy real completo (bundle nuevo + version.json nuevo) sirviendo
+  primero el build viejo y luego reemplazando los archivos en disco en caliente:
+  la app recarga **exactamente una vez** y queda estable en la versión nueva, sin
+  bucle.
+- **`vercel.json`**: se agregó configuración de `headers` — `Cache-Control:
+  no-cache, must-revalidate` para todas las rutas (fuerza que el navegador/iOS
+  siempre revalide el HTML y `version.json` contra el servidor en vez de servir una
+  copia cacheada vieja), y `Cache-Control: public, max-age=31536000, immutable`
+  específicamente para `/_expo/static/*` (los archivos JS llevan hash en el nombre
+  por cada build, así que cachearlos "para siempre" es seguro y mejora la
+  velocidad de carga). Esto es la otra mitad necesaria del mecanismo: sin este
+  header, aunque el JS detecte una versión nueva y haga `reload()`, el navegador
+  podría servir el `index.html` viejo desde su caché local en vez de pedirlo de
+  nuevo al servidor.
+- Verificado con `tsc --noEmit`, `jest` (24 tests) y dos pruebas end-to-end con
+  Playwright (bucle corregido + recarga única en un deploy simulado completo).
+- **Qué significa esto para el uso diario**: cada vez que se hace push a `main` (y
+  por lo tanto Vercel redespliega), la próxima vez que el usuario abra la PWA desde
+  el ícono en su iPhone —o vuelva a ella tras cambiar de app— la va a encontrar
+  actualizada sola, como máximo con un parpadeo de recarga, sin tener que hacer
+  nada manual.
