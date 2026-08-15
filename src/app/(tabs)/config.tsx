@@ -1,4 +1,5 @@
 import { router } from 'expo-router';
+import { Text } from 'react-native';
 
 import { Screen } from '@/components/ui/Screen';
 import { ScreenTitle } from '@/components/ui/ScreenTitle';
@@ -11,6 +12,8 @@ import { BackupCard } from '@/components/config/BackupCard';
 import { useAppStore } from '@/store/appStore';
 import { formatDisplayDate } from '@/logic/dateUtils';
 import type { UserConfig } from '@/types/models';
+import { APP_VERSION } from '@/generatedVersion';
+import { typography } from '@/theme/tokens';
 
 export default function ConfigScreen() {
   const config = useAppStore((s) => s.config);
@@ -29,6 +32,7 @@ export default function ConfigScreen() {
         <CardKicker>Rutina</CardKicker>
         <ChevronRow label="Administrar ejercicios" onPress={() => router.push('/administrar-ejercicios')} />
       </Card>
+      <Text style={{ ...typography.bodySecondary, textAlign: 'center' }}>Versión: {APP_VERSION}</Text>
     </Screen>
   );
 }
