@@ -1,6 +1,5 @@
 import { PropsWithChildren, useEffect } from 'react';
 import { ScrollView, StyleSheet, ViewStyle } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useIsFocused } from 'expo-router';
 import Animated, {
   Easing,
@@ -10,15 +9,14 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { colors, motion, spacing } from '@/theme/tokens';
-import { useCssSafeBottom } from '@/hooks/useCssSafeBottom';
+import { useCssSafeArea } from '@/hooks/useCssSafeArea';
 
 const TAB_BAR_CLEARANCE = 90;
 
 type Props = PropsWithChildren<{ contentContainerStyle?: ViewStyle }>;
 
 export function Screen({ children, contentContainerStyle }: Props) {
-  const insets = useSafeAreaInsets();
-  const bottomInset = useCssSafeBottom();
+  const { top: topInset, bottom: bottomInset } = useCssSafeArea();
   const isFocused = useIsFocused();
 
   const progress = useSharedValue(0);
@@ -49,7 +47,7 @@ export function Screen({ children, contentContainerStyle }: Props) {
         style={[
           styles.content,
           {
-            paddingTop: insets.top + spacing.xl,
+            paddingTop: topInset + spacing.xl,
             paddingBottom: bottomInset + TAB_BAR_CLEARANCE,
           },
           animatedStyle,

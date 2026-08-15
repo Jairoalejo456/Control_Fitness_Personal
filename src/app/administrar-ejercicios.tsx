@@ -1,6 +1,5 @@
 import { router } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import DraggableFlatList from 'react-native-draggable-flatlist';
 
 import { Card, CardKicker } from '@/components/ui/Card';
@@ -12,11 +11,12 @@ import { useAppStore } from '@/store/appStore';
 import { useUiStore } from '@/store/uiStore';
 import { DAY_SCHEDULE, WEEK_DAYS, type RoutineExercise } from '@/types/models';
 import { colors, spacing, typography } from '@/theme/tokens';
+import { useCssSafeArea } from '@/hooks/useCssSafeArea';
 
 const ADMIN_DAYS = WEEK_DAYS.filter((d) => d !== 'domingo');
 
 export default function AdministrarEjerciciosScreen() {
-  const insets = useSafeAreaInsets();
+  const insets = useCssSafeArea();
   const customRoutine = useAppStore((s) => s.customRoutine);
   const customCardioDesc = useAppStore((s) => s.customCardioDesc);
   const updateExercise = useAppStore((s) => s.updateExercise);

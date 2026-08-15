@@ -1,7 +1,6 @@
 import { router } from 'expo-router';
 import { Check } from 'lucide-react-native';
 import { StyleSheet, Text } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { Easing, FadeInUp } from 'react-native-reanimated';
 
 import { Button } from '@/components/ui/Button';
@@ -10,13 +9,14 @@ import { DAY_SCHEDULE } from '@/types/models';
 import { getWeekDayName, todayISO } from '@/logic/dateUtils';
 import { getSessionProgress } from '@/logic/sessionProgress';
 import { colors, motion, spacing, typography } from '@/theme/tokens';
+import { useCssSafeArea } from '@/hooks/useCssSafeArea';
 
 const screenEntering = FadeInUp.duration(motion.screenTransitionDuration)
   .easing(Easing.bezier(0.22, 1, 0.36, 1))
   .withInitialValues({ transform: [{ translateY: 10 }], opacity: 0 });
 
 export default function SesionCompletadaScreen() {
-  const insets = useSafeAreaInsets();
+  const insets = useCssSafeArea();
   const today = todayISO();
   const customRoutine = useAppStore((s) => s.customRoutine);
   const exerciseSessions = useAppStore((s) => s.exerciseSessions);

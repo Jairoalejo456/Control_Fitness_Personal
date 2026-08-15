@@ -722,3 +722,31 @@ conectó tanto en `(tabs)/_layout.tsx` (altura/padding de la tab bar) como en
 
 Verificado con `tsc`, `jest`, y una captura de Playwright inyectando el valor real
 de 34px reportado por el dispositivo — la tab bar queda limpia, sin hueco visible.
+
+### 2026-08-15 — Auditoría completa: unificar TODAS las fuentes de zona segura bajo env() por CSS puro
+
+El usuario pidió una auditoría exhaustiva del layout/safe-area antes de seguir
+tocando código (ver checklist detallado en el chat). Se encontraron 4 archivos más
+usando `useSafeAreaInsets()` de `react-native-safe-area-context` (la técnica de
+medición JS que ya se había identificado como inconsistente) que no se habían
+migrado todavía a `env()` por CSS puro: `Screen.tsx` (padding superior),
+`sesion-completada.tsx` (arriba y abajo) y `administrar-ejercicios.tsx` (arriba y
+abajo). Solo la tab bar en `(tabs)/_layout.tsx` había quedado con el fix.
+
+Se unificó todo bajo un solo hook, `src/hooks/useCssSafeArea.ts` (reemplaza a
+`useCssSafeBottom.ts`), que devuelve `{ top, bottom }` leyendo `--safe-top`/
+`--safe-bottom` por CSS puro en web, y el inset real de la plataforma en nativo. Se
+aplicó en los 4 archivos restantes. `config.tsx` sigue usando
+`useSafeAreaInsets()` de la librería a propósito, pero solo para el panel de
+Diagnóstico (comparación de referencia), no para layout real.
+
+**Confirmado que no hay aplicación duplicada del safe area**: se revisó
+`node_modules` de `@react-navigation/bottom-tabs` — aunque la librería intenta
+aplicar su propio `paddingBottom: insets.bottom` internamente, nuestro
+`tabBarStyle` se pasa como último elemento del array de estilos y lo sobreescribe
+por completo (confirmado leyendo el código fuente de la librería). Tampoco hay
+`bottom: env(...)` combinado con `padding-bottom: env(...)` en ningún lado — solo
+se usa como padding, nunca como posicionamiento absoluto adicional.
+
+Verificado con `tsc`, `jest`, y capturas de Playwright de Hoy y Administrar
+Ejercicios (las dos pantallas con más peso en zona segura) — sin regresión visual.
