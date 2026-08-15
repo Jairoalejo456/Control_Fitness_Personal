@@ -630,3 +630,44 @@ siguiendo la mayoría de estas prácticas de facto (build+tests antes de cada pu
 sospecha de caché descartada explícitamente con el indicador de versión, bitácora
 actualizada en cada cambio) — este documento las deja explícitas y formales para
 sesiones futuras.
+
+### 2026-08-15 — Causa raíz real, confirmada con datos de dispositivo: `visualViewport` ya descuenta el Dynamic Island
+
+El panel de diagnóstico (con `navigator.standalone` agregado) dio la respuesta
+definitiva desde el iPhone 16 Pro real del usuario, en modo standalone confirmado
+(`navigator.standalone=true`, `display-mode=true` — descartando de una vez la teoría
+de "pestaña de Safari normal"):
+
+```
+window: 402×812        visualViewport: 402×812
+safe-area env(): top 62px · bottom 34px       --app-height: 812px
+```
+
+El iPhone 16 Pro mide **402×874** de verdad (confirmado antes contra la
+documentación oficial de Apple). `874 − 812 = 62`, exacto igual al
+`safe-area-inset-top`. Conclusión: en modo standalone, Safari **ya descuenta** la
+zona segura superior (el Dynamic Island) de `window.innerHeight`/
+`visualViewport.height` — pero nuestro `Screen.tsx` **también** le sumaba su propio
+`paddingTop: insets.top + spacing.xl` encima de eso, restando el Dynamic Island
+**dos veces**. El sobrante de 62px quedaba como hueco vacío en la parte inferior de
+la pantalla (todo el contenido, insets incluidos, se recorría hacia arriba ese
+tanto). Esto explica por completo los 4 intentos anteriores fallidos: todos median
+`window.innerHeight`/`visualViewport.height` fielmente — el problema nunca estuvo en
+la medición en sí, sino en que esa medición **ya venía corregida** y la
+corregíamos otra vez.
+
+**Fix**: `useViewportHeightFix.ts` ahora reconstruye el alto real sumando de vuelta
+`--safe-top` (leído por CSS puro vía `env()`, ver `+html.tsx`) al alto medido:
+`--app-height = visualViewport.height + safe-top`. En navegadores sin zona segura
+(desktop, Android) `--safe-top` es 0, así que no cambia nada ahí — el fix es
+estructuralmente inocuo fuera de este caso.
+
+Verificado con Playwright inyectando exactamente los valores reales reportados por
+el dispositivo (`--safe-top: 62px`, viewport 402×812): `--app-height` se reconstruye
+a `874px` — el alto físico real correcto. **No se pudo terminar de validar
+visualmente en Chromium** si la tab bar se reacomoda al nuevo alto reconstruido,
+porque el viewport real de Playwright no puede "crecer" 62px extra como sí ocurre en
+el dispositivo físico (solo se validó el cálculo, no la geometría final en pantalla)
+— queda pendiente la confirmación visual del usuario en su iPhone tras este deploy,
+revisando que `--app-height` en el panel de Diagnóstico ahora diga `874px` (antes
+`812px`).
