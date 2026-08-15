@@ -46,6 +46,12 @@ export default function Root({ children }: PropsWithChildren) {
               html {
                 overscroll-behavior-y: none;
               }
+              /* Zona segura leída directo de env() por CSS puro (sin medirla por JS) —
+                 fuente de verdad para el panel de diagnóstico. */
+              :root {
+                --safe-top: env(safe-area-inset-top, 0px);
+                --safe-bottom: env(safe-area-inset-bottom, 0px);
+              }
             `,
           }}
         />

@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { Text } from 'react-native';
+import { Platform, Text, View } from 'react-native';
 
 import { Screen } from '@/components/ui/Screen';
 import { ScreenTitle } from '@/components/ui/ScreenTitle';
@@ -13,11 +13,13 @@ import { useAppStore } from '@/store/appStore';
 import { formatDisplayDate } from '@/logic/dateUtils';
 import type { UserConfig } from '@/types/models';
 import { APP_VERSION } from '@/generatedVersion';
-import { typography } from '@/theme/tokens';
+import { typography, spacing } from '@/theme/tokens';
+import { useViewportDebugInfo } from '@/hooks/useViewportDebugInfo';
 
 export default function ConfigScreen() {
   const config = useAppStore((s) => s.config);
   const setConfig = useAppStore((s) => s.setConfig);
+  const debugInfo = useViewportDebugInfo();
 
   const updateConfig = (partial: Partial<UserConfig>) => setConfig(partial);
 
@@ -32,7 +34,27 @@ export default function ConfigScreen() {
         <CardKicker>Rutina</CardKicker>
         <ChevronRow label="Administrar ejercicios" onPress={() => router.push('/administrar-ejercicios')} />
       </Card>
-      <Text style={{ ...typography.bodySecondary, textAlign: 'center' }}>Versión: {APP_VERSION}</Text>
+
+      {Platform.OS === 'web' ? (
+        <Card>
+          <CardKicker>Diagnóstico</CardKicker>
+          <Text style={typography.bodySecondary}>Versión: {APP_VERSION}</Text>
+          {debugInfo ? (
+            <View style={{ gap: spacing.xs / 2 }}>
+              <Text style={typography.bodySecondary}>
+                window: {debugInfo.windowW}×{debugInfo.windowH}
+              </Text>
+              <Text style={typography.bodySecondary}>
+                visualViewport: {debugInfo.visualViewportW ?? '—'}×{debugInfo.visualViewportH ?? '—'}
+              </Text>
+              <Text style={typography.bodySecondary}>
+                safe-area env(): top {debugInfo.safeTop}px · bottom {debugInfo.safeBottom}px
+              </Text>
+              <Text style={typography.bodySecondary}>--app-height: {debugInfo.appHeight || '—'}</Text>
+            </View>
+          ) : null}
+        </Card>
+      ) : null}
     </Screen>
   );
 }
