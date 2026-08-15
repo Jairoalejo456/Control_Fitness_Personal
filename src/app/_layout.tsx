@@ -15,6 +15,7 @@ import {
 import { colors } from '@/theme/tokens';
 import { useAppStore } from '@/store/appStore';
 import { useAutoUpdate } from '@/hooks/useAutoUpdate';
+import { useViewportHeightFix } from '@/hooks/useViewportHeightFix';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -29,6 +30,7 @@ export default function RootLayout() {
   const onboardingDone = useAppStore((state) => state.onboardingDone);
 
   useAutoUpdate();
+  useViewportHeightFix();
 
   const ready = fontsLoaded && hasHydrated;
 

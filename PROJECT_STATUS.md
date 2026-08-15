@@ -520,3 +520,47 @@ después de este deploy. Si el problema persistiera incluso con este límite dur
 40pt, el siguiente paso sería sospechar de un problema de caché en el dispositivo
 (que no esté cargando el build nuevo) antes de seguir ajustando el cálculo de
 insets.
+
+### 2026-08-15 — Tampoco era el tope de insets: 100dvh no soportado, fix con window.innerHeight
+
+Se verificó que el deploy del fix anterior (tope de 40pt) sí estaba en producción
+(`version.json` cambió) y el usuario confirmó, con capturas frescas, que el problema
+seguía **igual** incluso así. Pidiéndole una captura completa (desde la hora real
+hasta el borde físico del teléfono, sin recortar) del estado actual, se confirmó que
+el bloque de espacio vacío es mucho más grande que cualquier home indicator — y que
+aparece **desde que abre la app, sin necesidad de scroll** (descarta del todo la
+teoría de la barra de direcciones dinámica de Safari revelándose al hacer scroll).
+
+Esto redirigió el diagnóstico: el problema no es que la tab bar mida mal (ya estaba
+topada a 40pt como máximo) — es que **toda la app (`#root`) está renderizando más
+corta que la pantalla real del dispositivo**, dejando expuesto el `background-color`
+del `body` debajo de todo, incluida la tab bar. La sospecha inmediata: `100dvh` (el
+fix del commit anterior) simplemente no está soportado o se calcula mal en la
+versión de Safari del iPhone del usuario — si el navegador no reconoce el valor
+`100dvh`, esa declaración CSS se descarta silenciosamente y el navegador se queda con
+el `height: 100%` original de `#expo-reset`, es decir, el fix anterior no hacía nada
+en ese dispositivo específico.
+
+**Fix**: se abandonó depender de cualquier unidad de viewport CSS (`%`, `vh`, `dvh`)
+para la altura de `html`/`body`/`#root`, a favor de medir `window.innerHeight`
+directamente por JavaScript — soportado sin excepción en cualquier versión de
+Safari, es la técnica clásica (pre-`dvh`) para este problema.
+
+- **`src/hooks/useViewportHeightFix.ts`** (nuevo, web-only): al montar, y en cada
+  `resize`/`orientationchange`, escribe `document.documentElement.style.setProperty
+  ('--app-height', window.innerHeight + 'px')`.
+- Conectado en `src/app/_layout.tsx` junto a `useAutoUpdate()`.
+- **`src/app/+html.tsx`**: la regla CSS pasó de `height: 100dvh` a
+  `height: var(--app-height, 100dvh)` (con `100dvh` como respaldo mientras ese JS
+  no ha corrido, y `100%` de `#expo-reset` como último respaldo si ni siquiera
+  `dvh` es válido).
+
+Verificado con `tsc --noEmit`, `jest` (24 tests), y con Playwright confirmando que
+`getComputedStyle(document.documentElement).getPropertyValue('--app-height')` y
+`#root`'s altura renderizada coinciden exactamente con `window.innerHeight` (844px
+en el viewport de prueba). **Como con los intentos anteriores, no se puede confirmar
+al 100% sin que el usuario lo vea en su iPhone real** — pero a diferencia de los
+fixes anteriores (que dependían de que la librería de safe-area o el navegador
+interpretaran algo correctamente), este no depende de ningún soporte de features CSS
+modernas ni de medición de insets — solo de `window.innerHeight`, que existe desde
+los primeros navegadores móviles.

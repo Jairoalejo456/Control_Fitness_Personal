@@ -33,15 +33,15 @@ export default function Root({ children }: PropsWithChildren) {
           dangerouslySetInnerHTML={{
             __html: `
               body { background-color: ${colors.background}; }
-              /* Safari en iOS calcula 100%/100vh contra el viewport "grande" (barra de
-                 direcciones oculta), pero al cargar la barra sigue visible — deja un hueco
-                 en blanco debajo de la tab bar (fija al fondo) hasta que el usuario hace
-                 scroll y Safari recalcula. 100dvh se ajusta en tiempo real al viewport
-                 visible real, evitando ese hueco. Se declara después de height:100% para
-                 que los navegadores sin soporte de dvh conserven el valor de respaldo. */
+              /* Safari en iOS no siempre calcula bien 100%/100vh/100dvh contra el
+                 viewport visible real, dejando un hueco en blanco debajo de la tab bar
+                 (fija al fondo). --app-height la escribe useViewportHeightFix() con
+                 window.innerHeight (JS, soportado en cualquier versión de Safari) apenas
+                 carga la app — es la fuente de verdad. 100dvh y 100% quedan como
+                 respaldo mientras ese JS no ha corrido o en navegadores sin JS. */
               html, body, #root {
-                height: 100dvh;
-                min-height: 100dvh;
+                height: var(--app-height, 100dvh);
+                min-height: var(--app-height, 100dvh);
               }
               html {
                 overscroll-behavior-y: none;
