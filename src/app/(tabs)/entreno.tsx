@@ -50,9 +50,10 @@ export default function EntrenoScreen() {
   }, [activity.type, progress.done, progress.total]);
 
   const planLabel = activity.type === 'fuerza' ? activity.planName : activity.type === 'cardio' ? activity.planName : 'Descanso';
+  const isFuerza = activity.type === 'fuerza';
 
   return (
-    <Screen>
+    <Screen contentContainerStyle={isFuerza ? undefined : styles.fillContainer}>
       <ScreenTitle kicker={`Semana ${weekIndex} · ${WEEK_DAY_FULL_LABELS[weekDay]}`} title="Entrenamiento" subtitle={planLabel} />
 
       {activity.type === 'fuerza' ? (
@@ -74,21 +75,26 @@ export default function EntrenoScreen() {
       ) : null}
 
       {activity.type === 'cardio' ? (
-        <Card>
-          <CardKicker>{activity.obligatorio ? 'Cardio obligatorio' : 'Cardio opcional'}</CardKicker>
-          <Text style={typography.body}>{customCardioDesc[activity.plan]}</Text>
-          <Stepper
-            value={log.cardioMin}
-            step={5}
-            formatValue={(v) => `${v} min`}
-            onChange={(cardioMin) => upsertDailyLog(today, { cardioMin })}
-          />
-        </Card>
+        <View style={styles.centeredFill}>
+          <Card>
+            <CardKicker>{activity.obligatorio ? 'Cardio obligatorio' : 'Cardio opcional'}</CardKicker>
+            <Text style={typography.body}>{customCardioDesc[activity.plan]}</Text>
+            <Stepper
+              value={log.cardioMin}
+              step={5}
+              formatValue={(v) => `${v} min`}
+              onChange={(cardioMin) => upsertDailyLog(today, { cardioMin })}
+            />
+          </Card>
+        </View>
       ) : null}
 
       {activity.type === 'descanso' ? (
-        <View style={styles.restContainer}>
-          <Text style={styles.restText}>Hoy toca descansar. Aprovecha para recuperarte bien.</Text>
+        <View style={styles.centeredFill}>
+          <View style={styles.restContainer}>
+            <Text style={styles.restTitle}>Día de descanso</Text>
+            <Text style={styles.restText}>Hoy toca descansar. Aprovecha para recuperarte bien.</Text>
+          </View>
         </View>
       ) : null}
     </Screen>
@@ -96,6 +102,9 @@ export default function EntrenoScreen() {
 }
 
 const styles = StyleSheet.create({
-  restContainer: { alignItems: 'center', paddingTop: 48 },
+  fillContainer: { flex: 1 },
+  centeredFill: { flex: 1, justifyContent: 'center' },
+  restContainer: { alignItems: 'center', gap: 8 },
+  restTitle: { ...typography.valueLarge },
   restText: { ...typography.bodySecondary, textAlign: 'center' },
 });

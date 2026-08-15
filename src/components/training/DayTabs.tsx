@@ -13,7 +13,11 @@ type Props = {
 
 export function DayTabs({ days, selected, onSelect }: Props) {
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      style={styles.scroll}
+      contentContainerStyle={styles.row}>
       {days.map((day) => {
         const active = day === selected;
         return (
@@ -27,6 +31,7 @@ export function DayTabs({ days, selected, onSelect }: Props) {
 }
 
 const styles = StyleSheet.create({
+  scroll: { flexGrow: 0, flexShrink: 0 },
   row: { flexDirection: 'row', gap: spacing.sm },
   tab: {
     paddingVertical: 8,

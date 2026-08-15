@@ -1,5 +1,6 @@
 import { router } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import DraggableFlatList from 'react-native-draggable-flatlist';
 
 import { Card, CardKicker } from '@/components/ui/Card';
@@ -15,6 +16,7 @@ import { colors, spacing, typography } from '@/theme/tokens';
 const ADMIN_DAYS = WEEK_DAYS.filter((d) => d !== 'domingo');
 
 export default function AdministrarEjerciciosScreen() {
+  const insets = useSafeAreaInsets();
   const customRoutine = useAppStore((s) => s.customRoutine);
   const customCardioDesc = useAppStore((s) => s.customCardioDesc);
   const updateExercise = useAppStore((s) => s.updateExercise);
@@ -29,7 +31,7 @@ export default function AdministrarEjerciciosScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + spacing.xl }]}>
         <PressableScale onPress={() => router.back()}>
           <Text style={styles.backLink}>← Configuración</Text>
         </PressableScale>
@@ -44,7 +46,9 @@ export default function AdministrarEjerciciosScreen() {
         <DraggableFlatList<RoutineExercise>
           data={exercises}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + spacing.xxl }]}
+          bounces
+          alwaysBounceVertical
           onDragEnd={({ data }) => reorderExercises(activity.plan, data.map((e) => e.id))}
           renderItem={({ item, drag, isActive }) => (
             <EditableExerciseRow
@@ -58,7 +62,7 @@ export default function AdministrarEjerciciosScreen() {
       ) : null}
 
       {activity.type === 'cardio' ? (
-        <View style={styles.listContent}>
+        <View style={[styles.listContent, { paddingBottom: insets.bottom + spacing.xxl }]}>
           <Card>
             <CardKicker>Descripción de la sesión</CardKicker>
             <TextAreaInput
@@ -75,10 +79,10 @@ export default function AdministrarEjerciciosScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  header: { paddingHorizontal: spacing.xl, paddingTop: 56, gap: spacing.xs },
+  header: { paddingHorizontal: spacing.xl, gap: spacing.xs },
   backLink: { ...typography.kicker },
   title: { ...typography.screenTitle },
   subtitle: { ...typography.subtitle, marginBottom: spacing.sm },
   tabsWrap: { marginTop: spacing.sm, marginBottom: spacing.sm },
-  listContent: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xxl * 2, gap: spacing.md },
+  listContent: { paddingHorizontal: spacing.xl, gap: spacing.md },
 });

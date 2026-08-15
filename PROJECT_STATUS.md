@@ -329,3 +329,62 @@ capturas de pantalla de la Terminal/Xcode en cada paso e indicándole qué coman
 botón seguía. Si se retoma soporte de instalación en el futuro, ese sigue siendo el
 patrón a seguir (no asumir que se puede ejecutar nada directamente en la máquina del
 usuario).
+
+### 2026-08-15 — Pulido de pantallas: safe areas, bounce, espacios vacíos, animación de tabs
+
+El usuario pidió un pase de pulido general con 4 reglas aplicables a **todas** las
+pantallas: (1) rebote elegante en los límites de scroll, (2) medidas fieles a iPhone
+respetando zonas seguras, (3) eliminar espacios vacíos o texto apretado, (4)
+animación básica al cambiar de tab. Cambios:
+
+- **`src/components/ui/Screen.tsx`** (wrapper compartido por Hoy/Entreno/Rutina/Panel/
+  Config/Onboarding): el padding superior/inferior ahora usa
+  `useSafeAreaInsets()` en vez de valores fijos (`insets.top + spacing.xl`,
+  `insets.bottom + 90` para dejar espacio a la tab bar). El `ScrollView` tiene
+  `bounces`/`alwaysBounceVertical` explícitos. La animación de entrada dejó de ser
+  "solo una vez al montar" (`FadeInUp` estático) y pasó a dispararse cada vez que la
+  pantalla recupera el foco, usando `useIsFocused` (importado de `expo-router`, que
+  re-exporta React Navigation — **no** instalar `@react-navigation/native` aparte, no
+  es dependencia directa de este proyecto) + Reanimated (`useSharedValue`/
+  `withTiming`), así las 5 tabs tienen una transición sutil al navegar entre ellas.
+  `Screen` ahora acepta `contentContainerStyle` opcional para que pantallas
+  específicas puedan pedir `flex: 1` cuando necesitan centrar contenido corto.
+- **`src/app/administrar-ejercicios.tsx`** y **`src/app/sesion-completada.tsx`** (no
+  usan `Screen`, tienen layout propio): mismo tratamiento manual de
+  `useSafeAreaInsets()` para el padding superior/inferior en vez de valores fijos
+  (`paddingTop: 56` hardcodeado, etc.), y bounce explícito en el
+  `DraggableFlatList` de administrar ejercicios.
+- **Bug real encontrado (regla 3)**: en `entreno.tsx`, los días de cardio/descanso
+  mostraban una sola tarjeta pegada arriba con un espacio vacío enorme debajo
+  (ocupaba una fracción de la pantalla). Se corrigió envolviendo esa tarjeta en un
+  contenedor `flex:1, justifyContent:'center'` (activado solo para días no-fuerza vía
+  `contentContainerStyle={isFuerza ? undefined : styles.fillContainer}` en `Screen`),
+  y se le agregó un título ("Día de descanso") al mensaje de descanso, antes muy
+  escueto. Mismo problema y mismo arreglo aplicado a `rutina.tsx` en el día de
+  descanso (agrupando la tarjeta del día + la tarjeta "Progresiones" siempre presente
+  en un solo bloque centrado, ya que los días de fuerza siguen llenando la pantalla
+  de forma natural con la lista de ejercicios y no necesitan el centrado).
+- **Regresión encontrada y corregida al aplicar `flex:1` en `rutina.tsx`**: el
+  `ScrollView` horizontal de `DayTabs` (usado también en Administrar Ejercicios) se
+  estiraba verticalmente hasta ocupar casi toda la pantalla cuando quedaba como
+  hijo de un contenedor padre con `flex:1` — comportamiento específico de
+  `react-native-web` con `ScrollView` anidado sin altura fija. Se arregló agregando
+  `style={{ flexGrow: 0, flexShrink: 0 }}` al `ScrollView` de `DayTabs.tsx` para que
+  no herede una altura estirada del padre. **Si se vuelve a usar el patrón
+  `contentContainerStyle={{flex:1}}` en otra pantalla que también use `DayTabs` (o
+  cualquier `ScrollView` anidado), revisar este mismo problema.**
+- Verificado con `tsc --noEmit` (sin errores) y `jest` (24 tests, todos pasan), más
+  capturas de Playwright a 390×844 (viewport iPhone) de Hoy, Entreno (cardio y
+  descanso), Rutina (fuerza, cardio y descanso) y el fondo de Config — todas con
+  buen espaciado, sin texto apretado ni huecos vacíos, y `DayTabs` con su tamaño
+  normal en todos los casos.
+- **Pendiente de verificar en dispositivo real**: la animación de transición entre
+  tabs es visual/temporal, no se puede confirmar con capturas estáticas — el código
+  se revisó y debería disparar correctamente (`useIsFocused` cambia a `true` en cada
+  cambio de tab, lo que resetea y vuelve a correr `withTiming`), pero falta
+  confirmación visual en vivo (Expo Go, web, o la app nativa).
+- **Recordatorio para el usuario**: estos cambios están en el código fuente
+  compartido por la PWA y la app nativa. La PWA los reflejará automáticamente en el
+  próximo deploy de Vercel; la app nativa instalada en el iPhone necesita un nuevo
+  `npx expo run:ios --device --configuration Release` desde el Mac para incluirlos
+  (no se actualiza sola).

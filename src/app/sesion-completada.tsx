@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import { Check } from 'lucide-react-native';
 import { StyleSheet, Text } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { Easing, FadeInUp } from 'react-native-reanimated';
 
 import { Button } from '@/components/ui/Button';
@@ -15,6 +16,7 @@ const screenEntering = FadeInUp.duration(motion.screenTransitionDuration)
   .withInitialValues({ transform: [{ translateY: 10 }], opacity: 0 });
 
 export default function SesionCompletadaScreen() {
+  const insets = useSafeAreaInsets();
   const today = todayISO();
   const customRoutine = useAppStore((s) => s.customRoutine);
   const exerciseSessions = useAppStore((s) => s.exerciseSessions);
@@ -34,7 +36,9 @@ export default function SesionCompletadaScreen() {
   const planLabel = activity.type === 'fuerza' ? activity.planName : '';
 
   return (
-    <Animated.View entering={screenEntering} style={styles.container}>
+    <Animated.View
+      entering={screenEntering}
+      style={[styles.container, { paddingTop: insets.top + spacing.xl, paddingBottom: insets.bottom + spacing.xl }]}>
       <Animated.View style={styles.circle}>
         <Check size={32} color={colors.accent} strokeWidth={2.5} />
       </Animated.View>
