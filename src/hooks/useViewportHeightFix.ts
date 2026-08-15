@@ -2,19 +2,17 @@ import { useEffect } from 'react';
 import { Platform } from 'react-native';
 
 /**
- * Web-only. Mantiene --app-height sincronizada con el alto real de pantalla.
+ * Web-only. Mantiene --app-height sincronizada con lo que JS mide del viewport.
  *
- * Se midió con datos reales de dispositivo (panel de Diagnóstico en
- * Configuración) que `visualViewport.height`/`window.innerHeight`, en un mismo
- * iPhone 16 Pro en modo standalone, dieron valores *distintos* en dos aperturas
- * seguidas (812px una vez, 874px —el alto real— la otra) — no hay ningún offset
- * fijo que restarle o sumarle al Dynamic Island, es una medición que a veces se
- * toma **antes de que el WebView standalone termine de expandirse** a su tamaño
- * final justo al arrancar. La solución no es corregir el número con matemática
- * propia (eso rompe el caso en que ya viene bien) sino remedir un par de veces
- * más en los primeros instantes hasta que se asiente, además de seguir
- * escuchando resize/orientationchange/visualViewport para cualquier cambio
- * posterior (rotación, teclado, etc.).
+ * IMPORTANTE: esta variable ya NO controla el tamaño de #root (ver +html.tsx —
+ * ahora usa position:fixed con los 4 bordes en 0, que el navegador ajusta él
+ * mismo sin depender de ninguna medición JS). Se comprobó con datos reales de
+ * dispositivo que `visualViewport.height`/`window.innerHeight` pueden dar
+ * valores *distintos* entre aperturas separadas de la misma app standalone en
+ * el mismo iPhone (812px una vez, 874px —el alto real— otra) sin que se trate
+ * de una medición temprana sin asentar — a veces simplemente no llegan al
+ * valor correcto. Este hook se dejó corriendo solo para que el panel de
+ * Diagnóstico en Configuración pueda seguir mostrando y comparando ese valor.
  */
 export function useViewportHeightFix() {
   useEffect(() => {

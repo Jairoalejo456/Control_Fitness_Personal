@@ -750,3 +750,38 @@ se usa como padding, nunca como posicionamiento absoluto adicional.
 
 Verificado con `tsc`, `jest`, y capturas de Playwright de Hoy y Administrar
 Ejercicios (las dos pantallas con más peso en zona segura) — sin regresión visual.
+
+### 2026-08-15 — Fix definitivo: `#root` con `position: fixed` en vez de medir el alto por JS
+
+El usuario probó el fix de la auditoría (todo unificado bajo `env()` por CSS) y
+mandó captura nueva del panel de Diagnóstico. Esta vez `useSafeAreaInsets()`
+(librería) y `env()` **coincidieron exactamente** (62px/34px los dos) — así que
+la zona segura en sí nunca fue el problema real. Pero `window`/`visualViewport`
+volvieron a marcar `812` (no `874`, el alto real) — la **tercera** lectura
+distinta en tres pruebas separadas del mismo dispositivo (812, luego 874, ahora
+812 de nuevo). Con tres muestras inconsistentes ya no cabe ninguna teoría de
+"tarda en asentarse" — la medición de altura por JavaScript (`window.innerHeight`
+y `visualViewport.height` por igual) simplemente **no es confiable** en este
+WebView standalone, sin importar cuánto se reintente ni cuánto tiempo pase.
+
+**Cambio de estrategia definitivo**: se dejó de pedirle a JavaScript que mida la
+pantalla. En `src/app/+html.tsx`, `#root` pasó a usar `position: fixed` con los
+4 bordes (`top/right/bottom/left`) en `0`, en vez de un `height` calculado. Es
+una técnica puramente de CSS — el navegador ajusta el tamaño del elemento al
+viewport visible real en cada instante (rotación, teclado, cambios de la UI de
+Safari) sin que ningún código nuestro tenga que leer ni calcular ninguna altura.
+Se forzó `height: auto; width: auto` en la misma regla porque el reset de Expo le
+pone `height: 100%` a `#root`, y un `height` explícito compitiendo con
+`top/bottom: 0` deja el resultado ambiguo según la spec de CSS (que resuelve el
+conflicto ignorando `bottom`, justo el caso que rompía todo). `useViewportHeightFix`
+(que escribe `--app-height`) se dejó corriendo solo para que el panel de
+Diagnóstico lo siga mostrando de referencia — ya no controla el layout.
+
+**Verificado con Playwright simulando tres tamaños de viewport distintos sin
+ninguna medición JS de por medio** (812 → 700 → 874, imitando teclado/rotación/
+pantalla completa): en los tres casos `#root` y el borde inferior de la tab bar
+coincidieron **exactos** con el alto real del viewport, sin ningún sobrante — a
+diferencia de todos los intentos anteriores, este no depende de que
+`window.innerHeight`/`visualViewport.height` reporten un valor correcto, así que
+es inmune al problema de raíz que se venía persiguiendo. Verificado también con
+`tsc --noEmit` y `jest` (24 tests).

@@ -33,18 +33,34 @@ export default function Root({ children }: PropsWithChildren) {
           dangerouslySetInnerHTML={{
             __html: `
               body { background-color: ${colors.background}; }
-              /* Safari en iOS no siempre calcula bien 100%/100vh/100dvh contra el
-                 viewport visible real, dejando un hueco en blanco debajo de la tab bar
-                 (fija al fondo). --app-height la escribe useViewportHeightFix() con
-                 window.innerHeight (JS, soportado en cualquier versión de Safari) apenas
-                 carga la app — es la fuente de verdad. 100dvh y 100% quedan como
-                 respaldo mientras ese JS no ha corrido o en navegadores sin JS. */
-              html, body, #root {
-                height: var(--app-height, 100dvh);
-                min-height: var(--app-height, 100dvh);
+              /* En el iPhone de prueba, window.innerHeight/visualViewport.height dieron
+                 valores distintos (812px vs 874px) entre distintas aperturas de la MISMA
+                 app standalone — no es que la medición tarde en asentarse, a veces
+                 simplemente no llega al valor correcto. Ninguna medición por JS es
+                 confiable acá. La solución que no depende de medir nada: #root con
+                 position:fixed pegado a los 4 bordes — el navegador lo ajusta él mismo al
+                 viewport visible real en todo momento (rotación, teclado, barra de Safari),
+                 sin que nuestro código tenga que calcular ni leer ninguna altura.
+                 html/body quedan con 100% como base para navegadores muy antiguos. */
+              html, body {
+                height: 100%;
               }
               html {
                 overscroll-behavior-y: none;
+              }
+              #root {
+                position: fixed;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                left: 0;
+                /* El reset de Expo le pone height:100% a #root — un height explícito
+                   compitiendo con top/bottom:0 deja el resultado ambiguo (la spec de CSS
+                   resuelve ese conflicto ignorando bottom, justo lo que no queremos). Se
+                   fuerza a auto para que top/right/bottom/left sean la única fuente del
+                   tamaño. */
+                height: auto;
+                width: auto;
               }
               /* Zona segura leída directo de env() por CSS puro (sin medirla por JS) —
                  fuente de verdad para el panel de diagnóstico. */
