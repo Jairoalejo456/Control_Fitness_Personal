@@ -564,3 +564,47 @@ fixes anteriores (que dependían de que la librería de safe-area o el navegador
 interpretaran algo correctamente), este no depende de ningún soporte de features CSS
 modernas ni de medición de insets — solo de `window.innerHeight`, que existe desde
 los primeros navegadores móviles.
+
+### 2026-08-15 — Diagnóstico correcto por fin: `window.innerHeight` ≠ espacio visible real en Safari
+
+Se agregó temporalmente un indicador de versión visible en el pie de Configuración
+(`Versión: {APP_VERSION}`) para descartar de una vez la sospecha de que el iPhone del
+usuario estuviera cargando una copia cacheada vieja en cada prueba. El usuario lo
+confirmó: el texto coincidía exactamente con el `version.json` del último deploy —
+**la caché nunca fue el problema**, cada fix sí se estaba probando de verdad.
+
+La pista definitiva vino de un comentario del usuario: "no se ve porque lo tapa la
+barra inferior de Safari". Eso identificó el error real en los tres intentos
+anteriores (`100dvh`, tope de insets, incluso `window.innerHeight`): todos usan el
+**layout viewport** de Safari (una altura estable que asume que el chrome del
+navegador — la barra de herramientas inferior — está oculto), no el **visual
+viewport** (el área realmente visible en cada momento). Cuando la barra de Safari
+está en pantalla ocupando espacio real, `window.innerHeight` sigue reportando la
+altura "grande" como si no estuviera — nuestra página se dibuja más alta de lo que
+realmente se puede ver, y esa porción de más queda geométricamente detrás de la
+barra de Safari (por eso "la tapa"; en una captura de pantalla se ve como espacio en
+blanco de más).
+
+**Fix**: `useViewportHeightFix.ts` ahora usa `window.visualViewport.height` como
+fuente principal (con `window.innerHeight` como respaldo si no está disponible) —
+es la API que Apple documenta específicamente para este problema, soportada desde
+iOS 13, y se actualiza en tiempo real vía sus propios eventos `resize`/`scroll`
+cuando el chrome de Safari aparece o desaparece.
+
+**Verificado en tiempo real con Playwright** (sin esperar a que el usuario probara
+de nuevo, a pedido explícito): se cargó la app a 844px de alto, se redujo el
+viewport a 760px (simulando 84px reservados por una barra de herramientas) y se
+confirmó que `--app-height`, la altura real de `#root` y la posición de la tab bar
+se ajustan exactamente al nuevo valor en los tres casos (844 → 760 → 844), sin
+ningún sobrante — con capturas de pantalla confirmando que la tab bar queda al ras
+del borde en el estado reducido, sin hueco. Esto no reproduce el chrome visual de
+Safari en sí (Playwright/Chromium no lo tiene), pero sí valida que el mecanismo de
+tamaño responde correctamente a cualquier altura de viewport que el navegador
+reporte — que es exactamente la variable que estaba mal antes.
+
+Verificado también con `tsc --noEmit` y `jest` (24 tests). Nota honesta: si el
+usuario está viendo la PWA como pestaña normal de Safari (no como ícono instalado en
+modo standalone), Safari **siempre** reserva algo de espacio para su propia barra de
+herramientas — eso es normal en cualquier sitio web y no es un bug; lo que este fix
+elimina es el espacio de más que nuestra página agregaba encima de eso por leer mal
+el viewport.
