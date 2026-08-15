@@ -1,5 +1,6 @@
 import { router } from 'expo-router';
 import { Platform, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Screen } from '@/components/ui/Screen';
 import { ScreenTitle } from '@/components/ui/ScreenTitle';
@@ -20,6 +21,7 @@ export default function ConfigScreen() {
   const config = useAppStore((s) => s.config);
   const setConfig = useAppStore((s) => s.setConfig);
   const debugInfo = useViewportDebugInfo();
+  const rawInsets = useSafeAreaInsets();
 
   const updateConfig = (partial: Partial<UserConfig>) => setConfig(partial);
 
@@ -49,6 +51,9 @@ export default function ConfigScreen() {
               </Text>
               <Text style={typography.bodySecondary}>
                 safe-area env(): top {debugInfo.safeTop}px · bottom {debugInfo.safeBottom}px
+              </Text>
+              <Text style={typography.bodySecondary}>
+                useSafeAreaInsets() (librería): top {Math.round(rawInsets.top)}px · bottom {Math.round(rawInsets.bottom)}px
               </Text>
               <Text style={typography.bodySecondary}>--app-height: {debugInfo.appHeight || '—'}</Text>
               <Text style={typography.bodySecondary}>
