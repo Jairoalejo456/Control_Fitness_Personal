@@ -152,12 +152,18 @@ de Expo Go) o pagar la cuenta de $99/año para distribución permanente vía Tes
 
 ## Qué falta / posibles siguientes pasos
 
-- [ ] Terminar de configurar EAS Update (pendiente de que el usuario corra los
-      comandos en su Mac — ver sección de arriba).
-- [ ] Verificación real en dispositivo (todo lo hecho hasta ahora se verificó con
-      `tsc`, `jest`, y `expo export --platform web`; falta que el usuario confirme que
-      los gestos nativos —swipe-to-delete, drag-to-reorder, swipe-back, selector de
-      fecha, hoja para compartir— se sienten bien en su iPhone real).
+- [x] **App nativa instalada y funcionando en el iPhone real del usuario** (ver
+      bitácora 2026-08-14/15) — confirmado que abre y funciona sin Mac, wifi, ni
+      Expo Go de por medio (build Release con JS embebido).
+- [ ] Probar a fondo el uso diario real: registrar días completos, marcar sesiones de
+      fuerza, ver que el Panel calcule bien con datos reales (todo lo hecho hasta
+      ahora se verificó con `tsc`, `jest`, y `expo export --platform web`, más esta
+      instalación real — falta uso prolongado para detectar detalles de UX).
+- [ ] **Recordatorio importante para el usuario**: con cuenta Apple gratis, la app
+      instalada expira cada 7 días — hay que repetir
+      `npx expo run:ios --device --configuration Release` desde el Mac para renovarla
+      (ver sección "Camino elegido" más abajo). Recomendado exportar un respaldo JSON
+      desde Configuración antes de cada renovación, por seguridad.
 - [ ] Nada más está pendiente del alcance original — las 9 fases del plan inicial
       (setup, datos/lógica, onboarding/config, Hoy, Entreno/Sesión completada,
       Rutina/Administrar ejercicios, Panel, respaldo, pulido) están completas.
@@ -192,3 +198,46 @@ real con ícono propio (opción 3), no EAS Update. Se agregó `ios.bundleIdentif
 (`expo prebuild --platform ios` + `expo run:ios --device`) para correr desde su Mac.
 Ver la sección "Camino elegido: app nativa real vía Xcode" más arriba para el detalle
 completo y qué revisar si se retoma esto en otra sesión.
+
+### 2026-08-14/15 — Instalación nativa completada con éxito en el iPhone real
+Se guio al usuario paso a paso (por chat, sin acceso remoto a su Mac — ver nota abajo)
+para llevar el flujo de la sección "Camino elegido" hasta el final. Quedó
+**funcionando: la app abre en el iPhone del usuario con su propio ícono, sin Mac, sin
+wifi especial y sin Expo Go**. Obstáculos reales encontrados y cómo se resolvieron (útil
+si otro usuario/sesión repite este flujo):
+
+1. **Faltaba Homebrew y CocoaPods** en el Mac del usuario → `expo prebuild` fallaba al
+   instalar pods (`spawn brew ENOENT`). Se instaló Homebrew primero
+   (`/bin/bash -c "$(curl -fsSL .../install.sh)"`), se agregó al PATH (`brew shellenv`
+   en `.zprofile`), y luego `brew install cocoapods`. Después `expo prebuild --platform
+   ios --clean` sí completó.
+2. **El iPhone no aparecía en la lista de `expo run:ios --device`** → el dispositivo
+   solo estaba "Discovered", no emparejado. Se resolvió reconectando el cable con el
+   iPhone desbloqueado y aceptando el diálogo "Confiar en este computador" en el
+   teléfono.
+3. **Xcode pedía activar "Developer Mode"** en el iPhone (Settings → Privacy &
+   Security → Developer Mode) — obligatorio desde iOS 16+ para instalar builds fuera
+   de la App Store. Requiere reiniciar el teléfono.
+4. **Primer intento de `run:ios --device` se ejecutó accidentalmente contra el
+   Simulador** (el usuario presionó Enter sobre la opción resaltada por defecto sin
+   querer). No hizo daño, solo confirmó que el código compilaba.
+5. **Tras el prebuild, `run:ios --device` instaló la app pero falló al abrirla**:
+   `"invalid code signature... profile has not been explicitly trusted by the user"`.
+   Se resolvió en el iPhone: Configuración → General → VPN y administración de
+   dispositivos → tocar el perfil del Apple ID del usuario → Confiar.
+6. **Build de Debug**: al abrir, mostraba "No script URL provided" (la Terminal se
+   había cerrado, matando Metro) y luego, al reconectar con `npx expo start
+   --dev-client`, un aviso azul de "Refrescando" intermitente — **normal en modo
+   Debug**, la app sigue conectada en vivo al Metro del Mac. No bloqueaba el uso.
+7. **Solución definitiva**: `npx expo run:ios --device --configuration Release` —
+   compila con el JS embebido dentro de la app (no depende de Metro/Mac en
+   absoluto). Confirmado por el usuario: apagó el wifi del iPhone y la app abrió y
+   funcionó normal. **Este es el comando a usar de ahora en adelante**, tanto para la
+   instalación inicial como para renovar cada 7 días.
+
+**Nota de proceso importante**: esta sesión de Claude Code es remota (sin acceso al
+Mac del usuario) — todo este flujo se hizo guiando al usuario por chat, pidiéndole
+capturas de pantalla de la Terminal/Xcode en cada paso e indicándole qué comando o
+botón seguía. Si se retoma soporte de instalación en el futuro, ese sigue siendo el
+patrón a seguir (no asumir que se puede ejecutar nada directamente en la máquina del
+usuario).
