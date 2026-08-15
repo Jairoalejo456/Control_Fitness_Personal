@@ -608,3 +608,25 @@ modo standalone), Safari **siempre** reserva algo de espacio para su propia barr
 herramientas — eso es normal en cualquier sitio web y no es un bug; lo que este fix
 elimina es el espacio de más que nuestra página agregaba encima de eso por leer mal
 el viewport.
+
+### 2026-08-15 — Adoptada guía de trabajo general (`GUIATRABAJOIAAPPS.md`)
+
+El usuario subió una guía de trabajo general para desarrollo de apps con IA (no
+específica de este proyecto) y pidió seguirla siempre a partir de ahora. Se agregó
+como `GUIATRABAJOIAAPPS.md` en la raíz del repo y se enganchó en `CLAUDE.md` (junto a
+`AGENTS.md` y `PROJECT_STATUS.md`) para que se cargue automáticamente en cualquier
+sesión futura sobre este repo.
+
+Resumen de lo que pide (ver el archivo completo para el detalle): plan antes que
+código en cambios medianos/grandes; no asumir, preguntar cuando algo no esté claro;
+camino simple antes que sobre-construir; build + tests en verde antes de cada
+commit/push; si algo "sigue igual" tras un cambio, sospechar primero de la caché
+(pedir cerrar la app del todo, no solo mandarla a segundo plano); buscar causa raíz
+en vez de parchear síntomas; mockup antes de UI nueva cuando la decisión es visual;
+mantener documentación viva (este mismo archivo cumple ese rol); PWA — subir versión
+de caché en cada deploy; commits pequeños y enfocados; no crear PR sin que se pida
+explícitamente. La sesión de pulido de UI/PWA de este mismo día (2026-08-15) ya venía
+siguiendo la mayoría de estas prácticas de facto (build+tests antes de cada push,
+sospecha de caché descartada explícitamente con el indicador de versión, bitácora
+actualizada en cada cambio) — este documento las deja explícitas y formales para
+sesiones futuras.
