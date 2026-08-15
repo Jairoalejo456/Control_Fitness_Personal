@@ -10,7 +10,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { colors, motion, spacing } from '@/theme/tokens';
-import { useBottomInset } from '@/hooks/useBottomInset';
+import { useCssSafeBottom } from '@/hooks/useCssSafeBottom';
 
 const TAB_BAR_CLEARANCE = 90;
 
@@ -18,7 +18,7 @@ type Props = PropsWithChildren<{ contentContainerStyle?: ViewStyle }>;
 
 export function Screen({ children, contentContainerStyle }: Props) {
   const insets = useSafeAreaInsets();
-  const bottomInset = useBottomInset();
+  const bottomInset = useCssSafeBottom();
   const isFocused = useIsFocused();
 
   const progress = useSharedValue(0);

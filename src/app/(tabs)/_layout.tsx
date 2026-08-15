@@ -2,12 +2,12 @@ import { Tabs } from 'expo-router';
 
 import { colors, fonts } from '@/theme/tokens';
 import { TabIcon } from '@/components/icons/TabIcons';
-import { useBottomInset } from '@/hooks/useBottomInset';
+import { useCssSafeBottom } from '@/hooks/useCssSafeBottom';
 
 const TAB_BAR_CONTENT_HEIGHT = 54;
 
 export default function TabsLayout() {
-  const bottomInset = useBottomInset();
+  const bottomInset = useCssSafeBottom();
 
   return (
     <Tabs

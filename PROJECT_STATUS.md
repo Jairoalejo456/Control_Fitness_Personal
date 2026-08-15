@@ -700,3 +700,25 @@ de seguir escuchando `resize`/`orientationchange`/eventos de `visualViewport` pa
 cualquier cambio posterior. Verificado con Playwright que ya no hay ninguna
 sobre-corrección: el `--app-height` sigue exactamente la medición real en todo
 momento, sea cual sea.
+
+### 2026-08-15 — Fix directo: tab bar usa env() por CSS puro en vez de la medición JS de la librería
+
+El usuario aclaró que el problema visible siempre fue la tab bar específicamente
+(no el alto total de la página) y pidió una solución directa sin más vueltas. Se
+dejó de usar `react-native-safe-area-context` (`useSafeAreaInsets().bottom`, la
+técnica de div oculto + `getComputedStyle`) para calcular la altura/padding de la
+tab bar — es la misma fuente que ya se sospechaba inestable — y se cambió a leer
+`env(safe-area-inset-bottom)` directo por CSS puro (variable `--safe-bottom`
+definida en `+html.tsx`), que en las dos lecturas del dispositivo real del usuario
+se mantuvo **estable en 34px** mientras que otras mediciones basadas en JS
+variaron entre cargas.
+
+Nuevo hook `src/hooks/useCssSafeBottom.ts` (reemplaza a `useBottomInset.ts`,
+eliminado): en web lee `--safe-bottom` con reintentos de asentamiento
+(50/200/500ms) igual que `useViewportHeightFix`; en nativo (iOS/Android) sigue
+usando el inset real de la plataforma sin cambios, tope de 40pt incluido. Se
+conectó tanto en `(tabs)/_layout.tsx` (altura/padding de la tab bar) como en
+`Screen.tsx` (padding inferior del contenido), para que ambos sigan sincronizados.
+
+Verificado con `tsc`, `jest`, y una captura de Playwright inyectando el valor real
+de 34px reportado por el dispositivo — la tab bar queda limpia, sin hueco visible.
