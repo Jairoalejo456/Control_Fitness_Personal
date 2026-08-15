@@ -51,6 +51,10 @@ export default function ConfigScreen() {
                 safe-area env(): top {debugInfo.safeTop}px · bottom {debugInfo.safeBottom}px
               </Text>
               <Text style={typography.bodySecondary}>--app-height: {debugInfo.appHeight || '—'}</Text>
+              <Text style={typography.bodySecondary}>
+                Modo standalone: navigator.standalone={String(debugInfo.isStandaloneIOS)} · display-mode=
+                {String(debugInfo.isStandaloneDisplayMode)}
+              </Text>
             </View>
           ) : null}
         </Card>

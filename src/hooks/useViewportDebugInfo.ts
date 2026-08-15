@@ -9,6 +9,9 @@ export type ViewportDebugInfo = {
   safeTop: number;
   safeBottom: number;
   appHeight: string;
+  /** true = abierta como app independiente (sin chrome de Safari). false = pestaña normal de Safari. */
+  isStandaloneIOS: boolean | null;
+  isStandaloneDisplayMode: boolean;
 };
 
 function readInfo(): ViewportDebugInfo | null {
@@ -25,6 +28,8 @@ function readInfo(): ViewportDebugInfo | null {
     safeTop: parsePx(rootStyle.getPropertyValue('--safe-top')),
     safeBottom: parsePx(rootStyle.getPropertyValue('--safe-bottom')),
     appHeight: rootStyle.getPropertyValue('--app-height').trim(),
+    isStandaloneIOS: (navigator as Navigator & { standalone?: boolean }).standalone ?? null,
+    isStandaloneDisplayMode: window.matchMedia?.('(display-mode: standalone)').matches ?? false,
   };
 }
 
