@@ -194,14 +194,47 @@ la app nativa de Xcode (un solo set de assets para ambas).
 y se probó con Playwright (captura de Onboarding/Hoy/Panel, sin errores de consola) —
 coincide visualmente con el diseño original.
 
-**Despliegue en Vercel — pendiente, lo hace el usuario desde su navegador** (no
-requiere terminal ni Xcode, a diferencia del flujo nativo): se agregó `vercel.json`
-(`buildCommand: npm run build:web`, `outputDirectory: dist`) y el script
-`npm run build:web` en `package.json`. El usuario debe entrar a vercel.com, crear
-cuenta gratis, "Add New Project" → importar el repo de GitHub
-`Jairoalejo456/Control_Fitness_Personal` (rama `claude/github-connection-tq25hr`) →
-Vercel detecta `vercel.json` solo → Deploy. Cada push nuevo a esa rama re-despliega
-solo (si se conecta con auto-deploy activado, que es el default de Vercel).
+**Despliegue en Vercel — completado y funcionando en producción.**
+URL pública: **https://control-fitness-personal-jairo345.vercel.app** (también
+`https://control-fitness-personal.vercel.app`). El usuario conectó el proyecto a
+Vercel por su cuenta; luego el usuario conectó el **MCP de Vercel** a esta sesión de
+Claude Code, lo que permitió diagnosticar y resolver el despliegue directamente por
+API (sin necesidad de que el usuario hiciera clics en el dashboard, salvo dos ajustes
+puntuales que la API no expone).
+
+Dos problemas reales encontrados y su solución (útil si se reconfigura este proyecto
+de Vercel desde cero en el futuro):
+1. **El proyecto de Vercel estaba conectado a la rama `main`** de GitHub (creada
+   automáticamente al importar el repo), pero *todo* el trabajo real vivía solo en
+   `claude/github-connection-tq25hr` — `main` seguía teniendo únicamente el "Initial
+   commit" vacío (sin `package.json`), de ahí el error `ENOENT` al buscar
+   `package.json`. Solución aplicada (con permiso explícito del usuario): se hizo
+   `git push origin claude/github-connection-tq25hr:main` (fast-forward simple, sin
+   conflictos posibles ya que `main` era un ancestro directo) para que `main` quedara
+   idéntica a la rama de trabajo. Desde entonces cada push a `claude/github-connection-tq25hr`
+   se refleja también en `main` con el mismo comando, para que el despliegue
+   automático de Vercel siga funcionando.
+2. **El campo "Install Command" del proyecto en Vercel estaba con "Override" activado
+   y vacío**, lo que hacía que Vercel saltara `npm install` por completo ("Skipping
+   'install' command...") y el build fallara con `expo: command not found`. El
+   usuario lo corrigió manualmente en Settings → Build and Deployment → Install
+   Command (dejándolo en blanco con Override apagado, o `npm install` explícito) — no
+   hay forma de cambiar esto por API con las herramientas del MCP de Vercel
+   disponibles.
+
+Una vez corregidos ambos, un deploy disparado con la herramienta MCP
+`create_git_project` (que reusa el proyecto existente) completó bien: `npm install`
+(934 paquetes, ~23s) + `expo export --platform web` (~2 min en la infra de Vercel,
+notablemente más lento que local) → 15 rutas estáticas generadas correctamente.
+Verificado con `web_fetch_vercel_url` que la URL de producción responde 200 con el
+HTML correcto (manifest, meta tags, bundle JS).
+
+Si se retoma trabajo en este proyecto de Vercel a futuro: el MCP de Vercel conectado a
+esta sesión no tiene una herramienta para cambiar "Install Command"/"Build
+Command"/"Production Branch" por API — esos tres campos solo se pueden verificar por
+API (`get_project`) pero se editan a mano en el dashboard. Si un build empieza a fallar
+de nuevo con "Skipping install command" o construye la rama equivocada, revisar esos
+dos ajustes primero.
 
 ## Qué falta / posibles siguientes pasos
 
