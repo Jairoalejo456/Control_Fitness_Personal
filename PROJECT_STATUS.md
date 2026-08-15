@@ -479,3 +479,44 @@ de Hoy (sin regresión visual). **No se pudo reproducir el bug original en Chrom
 escritorio** porque no tiene la barra de direcciones dinámica de Safari — el fix se
 basa en la causa raíz documentada, pero su confirmación definitiva depende de que el
 usuario lo vea corregido en su iPhone real tras el próximo deploy.
+
+### 2026-08-15 — El fix de 100dvh no fue suficiente: tab bar con altura explícita
+
+El usuario confirmó que, tras el deploy del fix anterior, el problema seguía igual
+("sigue igual, no cambió nada") — con una captura nueva que además mostraba algo
+peor: la tarjeta "Proteína" quedaba tapada a medias por la tab bar, y debajo de los
+íconos/etiquetas de la tab bar seguía habiendo un bloque de espacio vacío grande.
+
+Se revisó `getTabBarHeight` en `@react-navigation/bottom-tabs` (vía
+`node_modules/expo-router/.../BottomTabBar.js`): calcula la altura de la tab bar como
+`49pt (alto base iOS) + insets.bottom`, y por separado aplica `paddingBottom:
+insets.bottom` — la fórmula en sí es la estándar correcta. Eso apunta a que el
+problema real es que `insets.bottom`, leído por `useSafeAreaInsets()` en este
+navegador/dispositivo específico, se está devolviendo con un valor mucho más grande
+de lo normal (el home indicator real de cualquier iPhone actual son ~34pt) — lo cual
+infla tanto la altura de la tab bar (dejando ese bloque vacío bajo los íconos) como,
+potencialmente, desincroniza el padding inferior que reserva `Screen.tsx` para que el
+contenido no quede tapado.
+
+**Fix (más robusto, no depende de que la librería adivine bien)**: se creó
+`src/hooks/useBottomInset.ts` — un wrapper sobre `useSafeAreaInsets()` que topa
+`insets.bottom` a un máximo de 40pt (`Math.min(insets.bottom, 40)`), ya que ningún
+iPhone real necesita más que eso para el home indicator. Se usa en dos lugares que
+antes calculaban esto por separado y podían desincronizarse:
+- **`src/app/(tabs)/_layout.tsx`**: ahora fija `tabBarStyle.height` y
+  `tabBarStyle.paddingBottom` explícitamente con el inset topado, en vez de dejar que
+  `@react-navigation/bottom-tabs` calcule su propia altura internamente (esto último
+  se sigue pudiendo hacer porque la librería aplica `tabBarStyle` como el último
+  elemento del array de estilos, así que sobreescribe su propio cálculo).
+- **`src/components/ui/Screen.tsx`**: el `paddingBottom` del contenido scrolleable
+  ahora usa este mismo inset topado en vez del `insets.bottom` crudo, para que
+  siempre quede en sync con la altura real de la tab bar.
+
+Verificado con `tsc --noEmit`, `jest` (24 tests) y una captura de Playwright del
+fondo de Hoy (tab bar del tamaño esperado, sin hueco ni overlap). **Sigue sin poder
+reproducirse el bug exacto en Chromium de escritorio** porque no expone insets de
+zona segura — la confirmación real depende de que el usuario lo vea en su iPhone
+después de este deploy. Si el problema persistiera incluso con este límite duro de
+40pt, el siguiente paso sería sospechar de un problema de caché en el dispositivo
+(que no esté cargando el build nuevo) antes de seguir ajustando el cálculo de
+insets.

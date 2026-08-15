@@ -2,8 +2,13 @@ import { Tabs } from 'expo-router';
 
 import { colors, fonts } from '@/theme/tokens';
 import { TabIcon } from '@/components/icons/TabIcons';
+import { useBottomInset } from '@/hooks/useBottomInset';
+
+const TAB_BAR_CONTENT_HEIGHT = 54;
 
 export default function TabsLayout() {
+  const bottomInset = useBottomInset();
+
   return (
     <Tabs
       screenOptions={{
@@ -14,6 +19,12 @@ export default function TabsLayout() {
           backgroundColor: colors.background,
           borderTopColor: colors.border,
           borderTopWidth: 1,
+          // Se fija explícitamente en vez de dejar que la librería calcule su propia
+          // altura a partir de los insets — evita que una lectura de zona segura
+          // inflada (visto en algunos navegadores web) agrande la tab bar.
+          height: TAB_BAR_CONTENT_HEIGHT + bottomInset,
+          paddingBottom: bottomInset,
+          paddingTop: 6,
         },
         tabBarLabelStyle: { fontFamily: fonts.medium, fontSize: 11 },
         sceneStyle: { backgroundColor: colors.background },

@@ -10,6 +10,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { colors, motion, spacing } from '@/theme/tokens';
+import { useBottomInset } from '@/hooks/useBottomInset';
 
 const TAB_BAR_CLEARANCE = 90;
 
@@ -17,6 +18,7 @@ type Props = PropsWithChildren<{ contentContainerStyle?: ViewStyle }>;
 
 export function Screen({ children, contentContainerStyle }: Props) {
   const insets = useSafeAreaInsets();
+  const bottomInset = useBottomInset();
   const isFocused = useIsFocused();
 
   const progress = useSharedValue(0);
@@ -48,7 +50,7 @@ export function Screen({ children, contentContainerStyle }: Props) {
           styles.content,
           {
             paddingTop: insets.top + spacing.xl,
-            paddingBottom: insets.bottom + TAB_BAR_CLEARANCE,
+            paddingBottom: bottomInset + TAB_BAR_CLEARANCE,
           },
           animatedStyle,
           contentContainerStyle,
