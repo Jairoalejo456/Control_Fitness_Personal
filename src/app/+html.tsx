@@ -29,7 +29,26 @@ export default function Root({ children }: PropsWithChildren) {
 
         <ScrollViewStyleReset />
 
-        <style dangerouslySetInnerHTML={{ __html: `body { background-color: ${colors.background}; }` }} />
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
+              body { background-color: ${colors.background}; }
+              /* Safari en iOS calcula 100%/100vh contra el viewport "grande" (barra de
+                 direcciones oculta), pero al cargar la barra sigue visible — deja un hueco
+                 en blanco debajo de la tab bar (fija al fondo) hasta que el usuario hace
+                 scroll y Safari recalcula. 100dvh se ajusta en tiempo real al viewport
+                 visible real, evitando ese hueco. Se declara después de height:100% para
+                 que los navegadores sin soporte de dvh conserven el valor de respaldo. */
+              html, body, #root {
+                height: 100dvh;
+                min-height: 100dvh;
+              }
+              html {
+                overscroll-behavior-y: none;
+              }
+            `,
+          }}
+        />
       </head>
       <body>{children}</body>
     </html>

@@ -446,3 +446,36 @@ de invalidación de caché que trae, innecesaria para una PWA sin soporte offlin
   el ícono en su iPhone —o vuelva a ella tras cambiar de app— la va a encontrar
   actualizada sola, como máximo con un parpadeo de recarga, sin tener que hacer
   nada manual.
+
+### 2026-08-15 — Fix: hueco en blanco debajo de la tab bar en iPhone real
+
+El usuario reportó (con captura de pantalla desde su iPhone real) un espacio vacío
+grande y "roto" debajo de la barra de tabs inferior, en vez de terminar limpio contra
+la barra blanca del home indicator.
+
+**Causa identificada**: el reset de estilos de Expo para web fija
+`html, body, #root { height: 100% }`. En Safari de iOS, `100%`/`100vh` se calcula
+contra el viewport "grande" (asumiendo que la barra de direcciones de Safari está
+oculta), pero al cargar la página esa barra sigue visible. Cuando el usuario hace
+scroll dentro de la app y Safari oculta su barra de direcciones automáticamente, el
+viewport real crece — pero la altura de nuestra página ya se había fijado antes con el
+valor viejo, y la tab bar (fija al fondo vía posicionamiento absoluto/fixed) no se
+reacomoda con ese cambio. El resultado es exactamente el hueco negro reportado. Es un
+bug conocido y muy documentado de Safari iOS con `position: fixed` + barra de
+direcciones dinámica, no un error de cálculo del componente de tabs en sí (se revisó
+su lógica de `insets.bottom` en `node_modules` y es la fórmula estándar correcta:
+altura base 49pt + `insets.bottom`).
+
+**Fix**: en `src/app/+html.tsx` se agregó una regla CSS con `100dvh` (dynamic viewport
+height, unidad diseñada específicamente para este problema, soportada desde iOS
+Safari 15.4+) sobre `html, body, #root`, declarada después del reset de Expo para que
+la sobreescriba por orden de cascada, dejando `height: 100%` como respaldo automático
+en navegadores sin soporte de `dvh`. También se agregó `overscroll-behavior-y: none`
+en `html` para evitar el rebote de la página completa (cada pantalla ya maneja su
+propio scroll/rebote internamente vía `Screen.tsx`).
+
+Verificado con `tsc --noEmit`, `jest` (24 tests) y una captura de Playwright del fondo
+de Hoy (sin regresión visual). **No se pudo reproducir el bug original en Chromium de
+escritorio** porque no tiene la barra de direcciones dinámica de Safari — el fix se
+basa en la causa raíz documentada, pero su confirmación definitiva depende de que el
+usuario lo vea corregido en su iPhone real tras el próximo deploy.
