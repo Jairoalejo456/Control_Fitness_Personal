@@ -61,6 +61,10 @@ export default function Root({ children }: PropsWithChildren) {
                    tamaño. */
                 height: auto;
                 width: auto;
+                /* TEMPORAL — diagnóstico visual: borde rojo para ver exactamente dónde
+                   termina #root en el dispositivo real. Quitar después de confirmar. */
+                outline: 4px solid red;
+                outline-offset: -4px;
               }
               /* Zona segura leída directo de env() por CSS puro (sin medirla por JS) —
                  fuente de verdad para el panel de diagnóstico. */
