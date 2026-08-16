@@ -32,7 +32,10 @@ export default function Root({ children }: PropsWithChildren) {
         <style
           dangerouslySetInnerHTML={{
             __html: `
-              body { background-color: ${colors.background}; }
+              /* TEMPORAL — diagnóstico visual: si #root no cubre toda la pantalla real,
+                 este color imposible de confundir se verá en el sobrante. Quitar después
+                 de confirmar (ver también el outline de #root más abajo). */
+              body { background-color: #ff00ff; }
               /* En el iPhone de prueba, window.innerHeight/visualViewport.height dieron
                  valores distintos (812px vs 874px) entre distintas aperturas de la MISMA
                  app standalone — no es que la medición tarde en asentarse, a veces
@@ -61,10 +64,6 @@ export default function Root({ children }: PropsWithChildren) {
                    tamaño. */
                 height: auto;
                 width: auto;
-                /* TEMPORAL — diagnóstico visual: borde rojo para ver exactamente dónde
-                   termina #root en el dispositivo real. Quitar después de confirmar. */
-                outline: 4px solid red;
-                outline-offset: -4px;
               }
               /* Zona segura leída directo de env() por CSS puro (sin medirla por JS) —
                  fuente de verdad para el panel de diagnóstico. */
