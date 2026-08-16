@@ -1,10 +1,21 @@
 import { Tabs } from 'expo-router';
+import { Platform } from 'react-native';
 
 import { colors, fonts } from '@/theme/tokens';
 import { TabIcon } from '@/components/icons/TabIcons';
 import { useCssSafeArea } from '@/hooks/useCssSafeArea';
 
 const TAB_BAR_CONTENT_HEIGHT = 54;
+
+// Web: la tab bar se desconecta por completo de si #root llega o no al borde
+// real de la pantalla — se ancla directo al viewport con su propio
+// position:fixed, en vez de depender de ser el último hijo de un contenedor
+// que mida bien. bottom:0 en un elemento fijo es un mecanismo distinto y más
+// directo que el que se usó (sin éxito) para #root.
+const webFixedStyle =
+  Platform.OS === 'web'
+    ? ({ position: 'fixed', bottom: 0, left: 0, right: 0, width: '100%' } as const as object)
+    : null;
 
 export default function TabsLayout() {
   const { bottom: bottomInset } = useCssSafeArea();
@@ -25,6 +36,7 @@ export default function TabsLayout() {
           height: TAB_BAR_CONTENT_HEIGHT + bottomInset,
           paddingBottom: bottomInset,
           paddingTop: 6,
+          ...webFixedStyle,
         },
         tabBarLabelStyle: { fontFamily: fonts.medium, fontSize: 11 },
         sceneStyle: { backgroundColor: colors.background },
