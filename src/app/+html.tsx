@@ -45,8 +45,15 @@ export default function Root({ children }: PropsWithChildren) {
                  viewport visible real en todo momento (rotación, teclado, barra de Safari),
                  sin que nuestro código tenga que calcular ni leer ninguna altura.
                  html/body quedan con 100% como base para navegadores muy antiguos. */
+              /* -webkit-fill-available es la palabra clave que WebKit definió
+                 específicamente para este problema (previa a dvh) — a diferencia de
+                 bottom:0 en position:fixed (que en este WebView standalone parece
+                 detenerse antes del borde físico real, dejando ver el fondo de body),
+                 esto le pide directamente el alto real disponible. Los navegadores que
+                 no la soportan ignoran la línea y se quedan con 100% de respaldo. */
               html, body {
                 height: 100%;
+                height: -webkit-fill-available;
               }
               html {
                 overscroll-behavior-y: none;
@@ -54,15 +61,10 @@ export default function Root({ children }: PropsWithChildren) {
               #root {
                 position: fixed;
                 top: 0;
-                right: 0;
-                bottom: 0;
                 left: 0;
-                /* El reset de Expo le pone height:100% a #root — un height explícito
-                   compitiendo con top/bottom:0 deja el resultado ambiguo (la spec de CSS
-                   resuelve ese conflicto ignorando bottom, justo lo que no queremos). Se
-                   fuerza a auto para que top/right/bottom/left sean la única fuente del
-                   tamaño. */
-                height: auto;
+                right: 0;
+                height: 100vh;
+                height: -webkit-fill-available;
                 width: auto;
               }
               /* Zona segura leída directo de env() por CSS puro (sin medirla por JS) —
