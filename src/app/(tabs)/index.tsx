@@ -1,10 +1,26 @@
 import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { Beef, CircleCheck, Flame, Footprints, HeartPulse, Moon, NotebookPen, Ruler, Scale, Utensils, Zap } from 'lucide-react-native';
+import { router } from 'expo-router';
+import {
+  Beef,
+  CircleCheck,
+  Dumbbell,
+  Flame,
+  Footprints,
+  HeartPulse,
+  Moon,
+  NotebookPen,
+  Ruler,
+  Scale,
+  TrendingUp,
+  Utensils,
+  Zap,
+} from 'lucide-react-native';
 
 import { Screen } from '@/components/ui/Screen';
 import { ScreenTitle } from '@/components/ui/ScreenTitle';
 import { Card, CardKicker } from '@/components/ui/Card';
+import { ChevronRow } from '@/components/ui/ChevronRow';
 import { FieldRow } from '@/components/ui/FieldRow';
 import { Stepper } from '@/components/ui/Stepper';
 import { NumericInput } from '@/components/ui/NumericInput';
@@ -16,11 +32,12 @@ import { DetailsToggle } from '@/components/ui/DetailsToggle';
 import { DailyLogDateHeader } from '@/components/daily/DailyLogDateHeader';
 import { useAppStore } from '@/store/appStore';
 import { useUiStore } from '@/store/uiStore';
+import { usePanelData } from '@/hooks/usePanelData';
 import { EMPTY_DAILY_LOG, DAY_SCHEDULE, WEEK_DAY_FULL_LABELS } from '@/types/models';
 import { getWeekDayName, getWeekIndexForDate, formatDisplayDate } from '@/logic/dateUtils';
 import { getStepGoalForWeek } from '@/data/stepGoals';
 import { getSessionProgress, isSessionComplete } from '@/logic/sessionProgress';
-import { colors, typography } from '@/theme/tokens';
+import { colors, getComplianceColor, typography } from '@/theme/tokens';
 
 export default function HoyScreen() {
   const [showDetails, setShowDetails] = useState(false);
@@ -57,6 +74,11 @@ export default function HoyScreen() {
       : { label: `Fuerza: ${progress.done}/${progress.total} series`, active: false };
   }
 
+  const { currentWeekMetrics } = usePanelData();
+  const overallPct =
+    currentWeekMetrics.overallCompliance.kind === 'datos-insuficientes' ? null : currentWeekMetrics.overallCompliance.pct;
+  const overallText = overallPct === null ? 'Datos insuficientes' : `${Math.round(overallPct * 100)}%`;
+
   return (
     <Screen>
       <ScreenTitle
@@ -87,6 +109,24 @@ export default function HoyScreen() {
             valueStyle={styles.compactValue}
           />
         </FieldRow>
+      </Card>
+
+      <Card>
+        <CardKicker icon={Dumbbell}>Entrenamiento</CardKicker>
+        <View style={styles.rowBetween}>
+          <Text style={styles.fieldLabel}>{planLabel}</Text>
+          {strengthBadge ? <Badge label={strengthBadge.label} active={strengthBadge.active} /> : null}
+        </View>
+        <ChevronRow label="Ir a Entreno" onPress={() => router.push('/entreno')} />
+      </Card>
+
+      <Card>
+        <CardKicker icon={TrendingUp}>Progreso</CardKicker>
+        <View style={styles.rowBetween}>
+          <Text style={styles.fieldLabel}>Cumplimiento esta semana</Text>
+          <Text style={[styles.valueLarge, overallPct !== null && { color: getComplianceColor(overallPct) }]}>{overallText}</Text>
+        </View>
+        <ChevronRow label="Ir a Progreso" onPress={() => router.push('/progreso')} />
       </Card>
 
       <DetailsToggle expanded={showDetails} onToggle={() => setShowDetails((v) => !v)} />
@@ -180,8 +220,6 @@ export default function HoyScreen() {
           </Card>
         </>
       ) : null}
-
-      {strengthBadge ? <Badge label={strengthBadge.label} active={strengthBadge.active} /> : null}
 
       <Button
         label={log.dayLogged ? 'Día registrado' : 'Marcar día como registrado'}

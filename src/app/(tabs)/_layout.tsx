@@ -73,24 +73,17 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="rutina"
+        name="progreso"
         options={{
-          title: 'Rutina',
-          tabBarIcon: ({ focused }) => <TabIcon name="rutina" focused={focused} />,
+          title: 'Progreso',
+          tabBarIcon: ({ focused }) => <TabIcon name="progreso" focused={focused} />,
         }}
       />
       <Tabs.Screen
-        name="panel"
+        name="mas"
         options={{
-          title: 'Panel',
-          tabBarIcon: ({ focused }) => <TabIcon name="panel" focused={focused} />,
-        }}
-      />
-      <Tabs.Screen
-        name="config"
-        options={{
-          title: 'Config',
-          tabBarIcon: ({ focused }) => <TabIcon name="config" focused={focused} />,
+          title: 'Más',
+          tabBarIcon: ({ focused }) => <TabIcon name="mas" focused={focused} />,
         }}
       />
     </Tabs>

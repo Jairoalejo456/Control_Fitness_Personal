@@ -55,6 +55,7 @@ export default function RootLayout() {
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="sesion-completada" options={{ animation: 'fade' }} />
           <Stack.Screen name="administrar-ejercicios" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="rutina" options={{ animation: 'slide_from_right' }} />
         </Stack.Protected>
       </Stack>
     </GestureHandlerRootView>

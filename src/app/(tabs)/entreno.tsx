@@ -5,18 +5,23 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Screen } from '@/components/ui/Screen';
 import { ScreenTitle } from '@/components/ui/ScreenTitle';
 import { Card, CardKicker } from '@/components/ui/Card';
+import { ChevronRow } from '@/components/ui/ChevronRow';
 import { Stepper } from '@/components/ui/Stepper';
 import { WarmupCard } from '@/components/training/WarmupCard';
 import { SessionProgressCard } from '@/components/training/SessionProgressCard';
 import { ExerciseCard } from '@/components/training/ExerciseCard';
 import { useAppStore } from '@/store/appStore';
+import { useUiStore } from '@/store/uiStore';
 import { DAY_SCHEDULE, EMPTY_DAILY_LOG, WEEK_DAY_FULL_LABELS } from '@/types/models';
-import { getWeekDayName, getWeekIndexForDate, todayISO } from '@/logic/dateUtils';
+import { getWeekDayName, getWeekIndexForDate } from '@/logic/dateUtils';
 import { getSessionProgress, isSessionComplete } from '@/logic/sessionProgress';
 import { typography } from '@/theme/tokens';
 
 export default function EntrenoScreen() {
-  const today = todayISO();
+  // Antes usaba todayISO() (fecha real del sistema), ignorando el día elegido en
+  // Hoy — por eso elegir viernes ahí y abrir Entreno mostraba domingo. Ambas
+  // pantallas comparten el mismo día seleccionado.
+  const today = useUiStore((s) => s.hoySelectedDate);
   const config = useAppStore((s) => s.config);
   const customRoutine = useAppStore((s) => s.customRoutine);
   const customCardioDesc = useAppStore((s) => s.customCardioDesc);
@@ -41,6 +46,16 @@ export default function EntrenoScreen() {
       : { done: 0, total: 0 };
 
   const prevCompleteRef = useRef(false);
+  // Al cambiar de día (ahora que "today" puede ser cualquier fecha elegida en Hoy,
+  // no solo la real) hay que sincronizar la referencia al estado real de ESE día
+  // antes de que el efecto de abajo la compare — si no, cambiar a un día que ya
+  // estaba completo se interpretaría como una transición recién ocurrida y
+  // redirigiría a "sesión completada" sin que el usuario haya hecho nada.
+  useEffect(() => {
+    prevCompleteRef.current = activity.type === 'fuerza' && isSessionComplete(progress);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [today]);
+
   useEffect(() => {
     const complete = activity.type === 'fuerza' && isSessionComplete(progress);
     if (complete && !prevCompleteRef.current) {
@@ -56,20 +71,14 @@ export default function EntrenoScreen() {
     <Screen contentContainerStyle={isFuerza ? undefined : styles.fillContainer}>
       <ScreenTitle kicker={`Semana ${weekIndex} · ${WEEK_DAY_FULL_LABELS[weekDay]}`} title="Entrenamiento" subtitle={planLabel} />
 
+      <ChevronRow label="Ver rutina completa" onPress={() => router.push('/rutina')} />
+
       {activity.type === 'fuerza' ? (
         <>
           <WarmupCard />
           <SessionProgressCard done={progress.done} total={progress.total} />
           {exercises.map((exercise, index) => (
-            <ExerciseCard
-              key={exercise.id}
-              mode="log"
-              exercise={exercise}
-              index={index}
-              weekIndex={weekIndex}
-              plan={activity.plan}
-              fecha={today}
-            />
+            <ExerciseCard key={exercise.id} exercise={exercise} index={index} weekIndex={weekIndex} plan={activity.plan} fecha={today} />
           ))}
         </>
       ) : null}

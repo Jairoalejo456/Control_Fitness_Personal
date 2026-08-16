@@ -1,4 +1,4 @@
-import { Calendar, Dumbbell, ListChecks, BarChart3, Settings } from 'lucide-react-native';
+import { Calendar, Dumbbell, BarChart3, Settings } from 'lucide-react-native';
 import type { LucideIcon } from 'lucide-react-native';
 
 import { colors } from '@/theme/tokens';
@@ -6,9 +6,8 @@ import { colors } from '@/theme/tokens';
 export const TAB_ICONS: Record<string, LucideIcon> = {
   index: Calendar,
   entreno: Dumbbell,
-  rutina: ListChecks,
-  panel: BarChart3,
-  config: Settings,
+  progreso: BarChart3,
+  mas: Settings,
 };
 
 export function TabIcon({ name, focused }: { name: string; focused: boolean }) {

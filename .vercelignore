@@ -1,0 +1,7 @@
+Obsidian.app/
+node_modules/
+ios/
+android/
+dist/
+.expo/
+coverage/

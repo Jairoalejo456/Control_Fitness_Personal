@@ -33,7 +33,7 @@ export default function AdministrarEjerciciosScreen() {
     <View style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + spacing.xl }]}>
         <PressableScale onPress={() => router.back()}>
-          <Text style={styles.backLink}>← Configuración</Text>
+          <Text style={styles.backLink}>← Más</Text>
         </PressableScale>
         <Text style={styles.title}>Administrar ejercicios</Text>
         <Text style={styles.subtitle}>Nombres, series recomendadas y orden</Text>
