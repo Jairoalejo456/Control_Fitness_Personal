@@ -1,4 +1,5 @@
 import { StyleSheet, Text } from 'react-native';
+import { CalendarDays, Flag, Hourglass, Ruler, Scale } from 'lucide-react-native';
 
 import type { UserConfig } from '@/types/models';
 import { Card, CardKicker } from '@/components/ui/Card';
@@ -18,8 +19,8 @@ type Props = {
 export function StartingPointCard({ config, onChange, showCinturaNote }: Props) {
   return (
     <Card>
-      <CardKicker>Punto de partida</CardKicker>
-      <FieldRow label="Peso inicial">
+      <CardKicker icon={Flag}>Punto de partida</CardKicker>
+      <FieldRow label="Peso inicial" icon={Scale}>
         <Stepper
           value={config.pesoInicialKg}
           step={0.5}
@@ -27,7 +28,7 @@ export function StartingPointCard({ config, onChange, showCinturaNote }: Props) 
           onChange={(pesoInicialKg) => onChange({ pesoInicialKg })}
         />
       </FieldRow>
-      <FieldRow label="Cintura inicial">
+      <FieldRow label="Cintura inicial" icon={Ruler}>
         <Stepper
           value={config.cinturaInicialCm}
           step={0.5}
@@ -41,10 +42,10 @@ export function StartingPointCard({ config, onChange, showCinturaNote }: Props) 
           Reemplázala por el promedio de 3 mediciones en ayunas cuando lo tengas.
         </Text>
       ) : null}
-      <FieldRow label="Inicio del plan">
+      <FieldRow label="Inicio del plan" icon={CalendarDays}>
         <DatePickerField value={config.fechaInicioPlan} onChange={(fechaInicioPlan) => onChange({ fechaInicioPlan })} />
       </FieldRow>
-      <FieldRow label="Duración (semanas)">
+      <FieldRow label="Duración (semanas)" icon={Hourglass}>
         <NumericInput
           value={config.duracionSemanas}
           onChange={(v) => onChange({ duracionSemanas: v ?? config.duracionSemanas })}

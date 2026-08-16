@@ -1,4 +1,5 @@
 import { StyleSheet, View } from 'react-native';
+import { Beef, Flame, Moon, Utensils } from 'lucide-react-native';
 
 import type { UserConfig } from '@/types/models';
 import { Card, CardKicker } from '@/components/ui/Card';
@@ -14,15 +15,15 @@ type Props = {
 export function NutritionSleepGoalsCard({ config, onChange }: Props) {
   return (
     <Card>
-      <CardKicker>Metas nutricionales y sueño</CardKicker>
-      <FieldRow label="Calorías objetivo">
+      <CardKicker icon={Utensils}>Metas nutricionales y sueño</CardKicker>
+      <FieldRow label="Calorías objetivo" icon={Flame}>
         <NumericInput
           value={config.caloriasObjetivo}
           onChange={(v) => onChange({ caloriasObjetivo: v ?? config.caloriasObjetivo })}
           width={90}
         />
       </FieldRow>
-      <FieldRow label="Proteína mínima / ideal">
+      <FieldRow label="Proteína mínima / ideal" icon={Beef}>
         <View style={styles.pair}>
           <NumericInput
             value={config.proteinaMinG}
@@ -36,7 +37,7 @@ export function NutritionSleepGoalsCard({ config, onChange }: Props) {
           />
         </View>
       </FieldRow>
-      <FieldRow label="Sueño ideal">
+      <FieldRow label="Sueño ideal" icon={Moon}>
         <Stepper
           value={config.suenoIdealH}
           step={0.5}

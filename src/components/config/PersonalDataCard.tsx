@@ -1,3 +1,5 @@
+import { Ruler, User } from 'lucide-react-native';
+
 import type { UserConfig } from '@/types/models';
 import { Card, CardKicker } from '@/components/ui/Card';
 import { FieldRow } from '@/components/ui/FieldRow';
@@ -13,8 +15,8 @@ type Props = {
 export function PersonalDataCard({ config, onChange }: Props) {
   return (
     <Card>
-      <CardKicker>Datos personales</CardKicker>
-      <FieldRow label="Edad">
+      <CardKicker icon={User}>Datos personales</CardKicker>
+      <FieldRow label="Edad" icon={User}>
         <NumericInput value={config.edad} onChange={(v) => onChange({ edad: v ?? 0 })} width={72} />
       </FieldRow>
       <FieldRow label="Sexo">
@@ -27,7 +29,7 @@ export function PersonalDataCard({ config, onChange }: Props) {
           onChange={(sexo) => onChange({ sexo })}
         />
       </FieldRow>
-      <FieldRow label="Estatura">
+      <FieldRow label="Estatura" icon={Ruler}>
         <Stepper
           value={config.estaturaM}
           step={0.01}

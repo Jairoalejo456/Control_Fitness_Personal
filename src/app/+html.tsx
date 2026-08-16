@@ -13,9 +13,17 @@ export default function Root({ children }: PropsWithChildren) {
       <head>
         <meta charSet="utf-8" />
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+        {/* interactive-widget=resizes-content: sin esto, 100lvh ignora el teclado (solo
+            reacciona a la barra de Safari) — al enfocar un input, iOS desplazaba toda
+            la página (tab bar incluida) hacia arriba para mantenerlo visible, en vez de
+            achicar el layout para que quede arriba del teclado. */}
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content"
+        />
         <meta name="description" content="Control Fitness Personal — seguimiento diario de un plan de recomposición corporal de 16 semanas." />
         <meta name="theme-color" content={colors.background} />
+        <title>Control Fitness Personal</title>
 
         {/* Instalable en iOS (Safari → Compartir → Agregar a inicio) */}
         <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -32,17 +40,16 @@ export default function Root({ children }: PropsWithChildren) {
         <style
           dangerouslySetInnerHTML={{
             __html: `
-              /* TEMPORAL — diagnóstico visual: si #root no cubre toda la pantalla real,
-                 este color imposible de confundir se verá en el sobrante. Quitar después
-                 de confirmar. */
-              body { background-color: #ff00ff; }
               /* 100dvh, window.innerHeight/visualViewport.height medidos por JS, y
                  position:fixed con bottom:0 fallaron todos en este WebView standalone
-                 específico (confirmado con el diagnóstico de fondo magenta — seguía
-                 apareciendo con los tres). Se adopta 100lvh (Large Viewport Height, la
-                 unidad que representa el viewport en su estado más grande posible) tras
-                 confirmar que es la técnica que usa otra PWA propia del usuario ya
-                 verificada funcionando en el mismo tipo de dispositivo/contexto. */
+                 específico (confirmado con un diagnóstico de fondo magenta en body,
+                 ya retirado — seguía apareciendo con los tres). Se adopta 100lvh
+                 (Large Viewport Height, la unidad que representa el viewport en su
+                 estado más grande posible) tras confirmar que es la técnica que usa
+                 otra PWA propia del usuario ya verificada funcionando en el mismo tipo
+                 de dispositivo/contexto. Confirmado de nuevo con render real
+                 (WebKit, 393×852pt) el 2026-08-15: #root cubre el 100% del viewport,
+                 sin hueco. */
               html, body, #root {
                 height: 100%;
                 height: 100lvh;

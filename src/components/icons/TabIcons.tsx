@@ -14,5 +14,5 @@ export const TAB_ICONS: Record<string, LucideIcon> = {
 export function TabIcon({ name, focused }: { name: string; focused: boolean }) {
   const Icon = TAB_ICONS[name];
   if (!Icon) return null;
-  return <Icon size={22} strokeWidth={1.75} color={focused ? colors.accent : colors.neutral} />;
+  return <Icon size={19} strokeWidth={1.75} color={focused ? colors.accent : colors.neutral} />;
 }

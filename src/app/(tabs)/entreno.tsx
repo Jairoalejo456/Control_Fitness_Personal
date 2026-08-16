@@ -90,12 +90,10 @@ export default function EntrenoScreen() {
       ) : null}
 
       {activity.type === 'descanso' ? (
-        <View style={styles.centeredFill}>
-          <View style={styles.restContainer}>
-            <Text style={styles.restTitle}>Día de descanso</Text>
-            <Text style={styles.restText}>Hoy toca descansar. Aprovecha para recuperarte bien.</Text>
-          </View>
-        </View>
+        <Card>
+          <CardKicker>Día de descanso</CardKicker>
+          <Text style={typography.body}>Hoy toca descansar. Aprovecha para recuperarte bien.</Text>
+        </Card>
       ) : null}
     </Screen>
   );
@@ -104,7 +102,4 @@ export default function EntrenoScreen() {
 const styles = StyleSheet.create({
   fillContainer: { flex: 1 },
   centeredFill: { flex: 1, justifyContent: 'center' },
-  restContainer: { alignItems: 'center', gap: 8 },
-  restTitle: { ...typography.valueLarge },
-  restText: { ...typography.bodySecondary, textAlign: 'center' },
 });

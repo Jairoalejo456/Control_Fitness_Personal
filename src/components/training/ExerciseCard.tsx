@@ -45,7 +45,7 @@ export function ExerciseCard({ mode, exercise, index, weekIndex, plan, fecha }: 
   const variantEnabled = exercise.variante !== null;
 
   return (
-    <Card>
+    <Card style={styles.card}>
       <View style={styles.headerRow}>
         <View style={styles.headerText}>
           <CardKicker>{`Ejercicio ${index + 1}`}</CardKicker>
@@ -101,14 +101,24 @@ export function ExerciseCard({ mode, exercise, index, weekIndex, plan, fecha }: 
 }
 
 const styles = StyleSheet.create({
+  // Un poco más grandes que el resto de las tarjetas de la app, a propósito — acá lo
+  // que importa es leer bien el ejercicio, no la densidad de información.
+  card: { padding: spacing.lg + 4, gap: spacing.lg },
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', gap: spacing.md },
-  headerText: { flex: 1, gap: 2 },
-  name: { ...typography.body, fontFamily: typography.valueLarge.fontFamily, fontSize: 15 },
-  repRange: { ...typography.bodySecondary },
+  headerText: { flex: 1, gap: 4 },
+  name: { ...typography.body, fontFamily: typography.valueLarge.fontFamily, fontSize: 18 },
+  repRange: { ...typography.bodySecondary, fontSize: 14 },
   variantColumn: { width: 78, alignItems: 'flex-start', gap: 6 },
   variantLabel: { ...typography.labelSmall, fontSize: 10 },
-  note: { ...typography.bodySecondary, color: colors.textSecondary, borderLeftWidth: 2, borderLeftColor: colors.accent, paddingLeft: 8 },
-  readonlyMeta: { ...typography.bodySecondary },
+  note: {
+    ...typography.bodySecondary,
+    fontSize: 14,
+    color: colors.textSecondary,
+    borderLeftWidth: 2,
+    borderLeftColor: colors.accent,
+    paddingLeft: 10,
+  },
+  readonlyMeta: { ...typography.bodySecondary, fontSize: 14 },
   sets: { gap: spacing.sm },
   addSetButton: { borderStyle: 'dashed' },
 });

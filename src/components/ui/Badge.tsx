@@ -23,9 +23,9 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 10,
   },
-  badgeActive: { borderColor: colors.accent },
+  badgeActive: { borderColor: colors.good, backgroundColor: colors.goodTranslucent },
   badgeNeutral: { borderColor: colors.neutral },
   label: { ...typography.labelSmall },
-  labelActive: { color: colors.accent },
+  labelActive: { color: colors.good },
   labelNeutral: { color: colors.neutral },
 });

@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from 'react-native';
-import Svg, { Circle, Line, Polyline } from 'react-native-svg';
+import Svg, { Circle, Defs, Line, LinearGradient, Polygon, Polyline, Stop } from 'react-native-svg';
 
 import type { TrendPoint } from '@/logic/trendSeries';
 import { colors, typography } from '@/theme/tokens';
@@ -41,6 +41,10 @@ export function TrendChart({ title, points, unit, height = 100 }: Props) {
   });
 
   const polylinePoints = coords.map((c) => `${c.x},${c.y}`).join(' ');
+  const baselineY = paddingY + usableHeight;
+  const areaPoints = `${paddingX},${baselineY} ${polylinePoints} ${width - paddingX},${baselineY}`;
+  const gradientId = `trend-fill-${title.replace(/\s+/g, '-').toLowerCase()}`;
+  const last = coords[coords.length - 1];
 
   return (
     <View style={styles.container}>
@@ -51,11 +55,21 @@ export function TrendChart({ title, points, unit, height = 100 }: Props) {
         </Text>
       </View>
       <Svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`}>
-        <Line x1={paddingX} y1={height / 2} x2={width - paddingX} y2={height / 2} stroke={colors.border} strokeWidth={1} />
+        <Defs>
+          <LinearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+            <Stop offset="0" stopColor={colors.accent} stopOpacity={0.22} />
+            <Stop offset="1" stopColor={colors.accent} stopOpacity={0} />
+          </LinearGradient>
+        </Defs>
+        <Line x1={paddingX} y1={baselineY} x2={width - paddingX} y2={baselineY} stroke={colors.border} strokeWidth={1} />
+        <Polygon points={areaPoints} fill={`url(#${gradientId})`} />
         <Polyline points={polylinePoints} fill="none" stroke={colors.accent} strokeWidth={1.5} />
-        {coords.map((c, i) => (
-          <Circle key={i} cx={c.x} cy={c.y} r={2.5} fill={colors.accent} />
+        {coords.slice(0, -1).map((c, i) => (
+          <Circle key={i} cx={c.x} cy={c.y} r={2} fill={colors.accent} opacity={0.55} />
         ))}
+        {/* Punto actual destacado con un halo, para que el último valor resalte sobre el resto de la serie. */}
+        <Circle cx={last.x} cy={last.y} r={6} fill={colors.accent} opacity={0.16} />
+        <Circle cx={last.x} cy={last.y} r={3.5} fill={colors.accent} />
       </Svg>
     </View>
   );

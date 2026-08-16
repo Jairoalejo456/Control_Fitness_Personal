@@ -17,7 +17,7 @@ export default function OnboardingScreen() {
   const updateDraft = (partial: Partial<UserConfig>) => setDraft((prev) => ({ ...prev, ...partial }));
 
   return (
-    <Screen>
+    <Screen bottomSafeArea>
       <ScreenTitle
         kicker="Bienvenido"
         title="Configura tu plan"

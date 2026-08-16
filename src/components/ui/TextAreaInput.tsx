@@ -31,6 +31,8 @@ const styles = StyleSheet.create({
     padding: 12,
     color: colors.textPrimary,
     fontFamily: typography.body.fontFamily,
-    fontSize: 14,
+    // 16px mínimo: por debajo de eso Safari en iOS hace zoom automático del viewport
+    // al enfocar el campo, y no siempre se revierte solo al cerrar el teclado.
+    fontSize: 16,
   },
 });

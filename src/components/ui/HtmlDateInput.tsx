@@ -29,7 +29,9 @@ export function HtmlDateInput({ value, onChange, max }: Props) {
       borderRadius: radii.buttonSm,
       padding: '10px 12px',
       fontFamily: typography.body.fontFamily,
-      fontSize: 14,
+      // 16px mínimo: por debajo de eso Safari en iOS hace zoom automático del viewport
+      // al enfocar el campo, y no siempre se revierte solo al cerrar el teclado.
+      fontSize: 16,
       colorScheme: 'dark',
     },
   });

@@ -3,6 +3,10 @@ import { Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const MAX_BOTTOM_INSET = 40;
+// Alto real del home indicator en todo iPhone con Face ID (34pt, estable en
+// portrait). Tope específico para web: más ajustado que MAX_BOTTOM_INSET (nativo)
+// porque acá el problema observado es justo una lectura de --safe-bottom inflada.
+const MAX_BOTTOM_INSET_WEB = 34;
 
 /**
  * En web, lee la zona segura directo de env() por CSS puro (variables --safe-top/
@@ -38,7 +42,10 @@ export function useCssSafeArea() {
   }, []);
 
   if (Platform.OS === 'web') {
-    return { top: css?.top ?? 0, bottom: css?.bottom ?? 0 };
+    // Mismo tope que en nativo (línea de abajo): una lectura de --safe-bottom
+    // inflada por el navegador no debe agrandar el espacio reservado más allá
+    // del home indicator real.
+    return { top: css?.top ?? 0, bottom: Math.min(css?.bottom ?? 0, MAX_BOTTOM_INSET_WEB) };
   }
   return { top: insets.top, bottom: Math.min(insets.bottom, MAX_BOTTOM_INSET) };
 }

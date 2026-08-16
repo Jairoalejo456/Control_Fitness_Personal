@@ -12,6 +12,9 @@ type Props = {
 export function ProgressBar({ progress, height = 6 }: Props) {
   const clamped = Math.max(0, Math.min(1, progress));
   const width = useSharedValue(clamped);
+  // Meta cumplida se siente distinto de "en progreso" — mismo criterio de color que
+  // el resto del cumplimiento semanal (ver getComplianceColor en theme/tokens).
+  const fillColor = progress >= 1 ? colors.good : colors.accent;
 
   useEffect(() => {
     width.value = withTiming(clamped, { duration: motion.progressBarDuration });
@@ -23,12 +26,12 @@ export function ProgressBar({ progress, height = 6 }: Props) {
 
   return (
     <View style={[styles.track, { height, borderRadius: height / 2 }]}>
-      <Animated.View style={[styles.fill, { borderRadius: height / 2 }, animatedStyle]} />
+      <Animated.View style={[styles.fill, { borderRadius: height / 2, backgroundColor: fillColor }, animatedStyle]} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   track: { backgroundColor: colors.border, overflow: 'hidden', width: '100%' },
-  fill: { height: '100%', backgroundColor: colors.accent },
+  fill: { height: '100%' },
 });
