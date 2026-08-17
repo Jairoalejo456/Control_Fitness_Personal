@@ -10,6 +10,7 @@ import { TextField } from '@/components/ui/TextField';
 import { Button } from '@/components/ui/Button';
 import { PressableScale } from '@/components/ui/PressableScale';
 import { CheckCircleButton } from '@/components/ui/CheckCircleButton';
+import { SwipeableRow } from '@/components/ui/SwipeableRow';
 import { SetRow } from './SetRow';
 import { useAppStore } from '@/store/appStore';
 import { getExpectedSetCount } from '@/logic/progression';
@@ -131,12 +132,14 @@ export function ExerciseCard({ exercise, index, weekIndex, plan, fecha }: Props)
         <View style={styles.doneList}>
           {sets.map((set, i) =>
             set.done ? (
-              <View key={i} style={styles.doneRow}>
-                <Text style={styles.doneRowText}>
-                  Serie {i + 1}/{sets.length} — {set.pesoKg ?? '—'}kg × {set.reps ?? '—'}
-                </Text>
-                <CheckCircleButton done onPress={() => toggleSetDone(fecha, plan, exercise.id, i)} />
-              </View>
+              <SwipeableRow key={i} onDelete={() => removeSet(fecha, plan, exercise.id, i)}>
+                <View style={styles.doneRow}>
+                  <Text style={styles.doneRowText}>
+                    Serie {i + 1}/{sets.length} — {set.pesoKg ?? '—'}kg × {set.reps ?? '—'}
+                  </Text>
+                  <CheckCircleButton done onPress={() => toggleSetDone(fecha, plan, exercise.id, i)} />
+                </View>
+              </SwipeableRow>
             ) : null,
           )}
         </View>
@@ -161,6 +164,10 @@ export function ExerciseCard({ exercise, index, weekIndex, plan, fecha }: Props)
             ? '1 serie en cola — aparece al completar la actual'
             : `${queuedCount} series en cola — aparecen al completar la actual`}
         </Text>
+      ) : null}
+
+      {sets.length > 0 ? (
+        <Text style={styles.deleteHint}>Desliza una serie hacia la izquierda para eliminarla</Text>
       ) : null}
 
       <Button label="+ agregar serie" fullWidth onPress={() => addSet(fecha, plan, exercise.id)} style={styles.addSetButton} />
@@ -198,6 +205,7 @@ const styles = StyleSheet.create({
   doneRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 2 },
   doneRowText: { ...typography.bodySecondary, color: colors.good },
   queuedText: { ...typography.labelSmall, color: colors.textSecondary },
+  deleteHint: { ...typography.labelSmall, color: colors.textSecondary, textAlign: 'center' },
   addSetButton: { borderStyle: 'dashed' },
   completedCard: { gap: 4, paddingVertical: spacing.md },
   completedRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
