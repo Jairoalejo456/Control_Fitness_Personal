@@ -8,6 +8,7 @@ import { colors, spacing, typography } from '@/theme/tokens';
 
 type Props = {
   index: number;
+  total: number;
   set: ExerciseSetEntry;
   placeholderKg: number | null;
   placeholderReps: number | null;
@@ -16,11 +17,13 @@ type Props = {
   onDelete: () => void;
 };
 
-export function SetRow({ index, set, placeholderKg, placeholderReps, onChange, onToggleDone, onDelete }: Props) {
+export function SetRow({ index, total, set, placeholderKg, placeholderReps, onChange, onToggleDone, onDelete }: Props) {
   return (
     <SwipeableRow onDelete={onDelete}>
       <View style={styles.row}>
-        <Text style={styles.setLabel}>Serie {index + 1}</Text>
+        <Text style={styles.setLabel}>
+          Serie {index + 1}/{total}
+        </Text>
         <NumericInput
           value={set.pesoKg}
           onChange={(pesoKg) => onChange({ pesoKg })}
@@ -44,6 +47,6 @@ export function SetRow({ index, set, placeholderKg, placeholderReps, onChange, o
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, backgroundColor: 'transparent', paddingVertical: 4 },
-  setLabel: { ...typography.labelSmall, width: 48 },
+  setLabel: { ...typography.labelSmall, width: 56 },
   flexInput: { flex: 1 },
 });

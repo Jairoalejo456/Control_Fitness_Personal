@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { CircleCheck, Trophy } from 'lucide-react-native';
 
@@ -8,6 +8,8 @@ import { Card, CardKicker } from '@/components/ui/Card';
 import { Switch } from '@/components/ui/Switch';
 import { TextField } from '@/components/ui/TextField';
 import { Button } from '@/components/ui/Button';
+import { PressableScale } from '@/components/ui/PressableScale';
+import { CheckCircleButton } from '@/components/ui/CheckCircleButton';
 import { SetRow } from './SetRow';
 import { useAppStore } from '@/store/appStore';
 import { getExpectedSetCount } from '@/logic/progression';
@@ -57,25 +59,35 @@ export function ExerciseCard({ exercise, index, weekIndex, plan, fecha }: Props)
   const variantEnabled = exercise.variante !== null;
   const allDone = sets.length > 0 && sets.every((s) => s.done);
   const currentIndex = sets.findIndex((s) => !s.done);
+  const queuedCount = Math.max(0, sets.filter((s) => !s.done).length - 1);
 
-  if (allDone) {
+  const [reviewOpen, setReviewOpen] = useState(false);
+
+  useEffect(() => {
+    if (allDone) setReviewOpen(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allDone]);
+
+  if (allDone && !reviewOpen) {
     const best = sets.reduce<{ pesoKg: number; reps: number } | null>((acc, s) => {
       if (s.pesoKg === null || s.reps === null) return acc;
       if (!acc || s.pesoKg > acc.pesoKg) return { pesoKg: s.pesoKg, reps: s.reps };
       return acc;
     }, null);
     return (
-      <Card style={styles.completedCard}>
-        <View style={styles.completedRow}>
-          <CircleCheck size={18} strokeWidth={2} color={colors.good} />
-          <Text style={styles.completedName}>{exercise.nombre}</Text>
-        </View>
-        {best ? (
+      <PressableScale onPress={() => setReviewOpen(true)} accessibilityLabel="Revisar y corregir series">
+        <Card style={styles.completedCard}>
+          <View style={styles.completedRow}>
+            <CircleCheck size={18} strokeWidth={2} color={colors.good} />
+            <Text style={styles.completedName}>{exercise.nombre}</Text>
+          </View>
           <Text style={styles.completedMeta}>
-            Mejor serie de hoy: {best.pesoKg}kg × {best.reps}
+            {sets.length} {sets.length === 1 ? 'serie completada' : 'series completadas'}
+            {best ? ` · Mejor serie de hoy: ${best.pesoKg}kg × ${best.reps}` : ''}
           </Text>
-        ) : null}
-      </Card>
+          <Text style={styles.reviewHint}>Toca para corregir una serie</Text>
+        </Card>
+      </PressableScale>
     );
   }
 
@@ -86,7 +98,8 @@ export function ExerciseCard({ exercise, index, weekIndex, plan, fecha }: Props)
           <CardKicker>{`Ejercicio ${index + 1}`}</CardKicker>
           <Text style={styles.name}>{exercise.nombre}</Text>
           <Text style={styles.repRange}>
-            {exercise.repMin}–{exercise.repMax} {REP_UNIT_LABELS[exercise.unidad]}
+            {exercise.repMin}–{exercise.repMax} {REP_UNIT_LABELS[exercise.unidad]} · {sets.length}{' '}
+            {sets.length === 1 ? 'serie' : 'series'} en total
           </Text>
         </View>
         <View style={styles.variantColumn}>
@@ -118,9 +131,12 @@ export function ExerciseCard({ exercise, index, weekIndex, plan, fecha }: Props)
         <View style={styles.doneList}>
           {sets.map((set, i) =>
             set.done ? (
-              <Text key={i} style={styles.doneRow}>
-                Serie {i + 1} — {set.pesoKg ?? '—'}kg × {set.reps ?? '—'} ✓
-              </Text>
+              <View key={i} style={styles.doneRow}>
+                <Text style={styles.doneRowText}>
+                  Serie {i + 1}/{sets.length} — {set.pesoKg ?? '—'}kg × {set.reps ?? '—'}
+                </Text>
+                <CheckCircleButton done onPress={() => toggleSetDone(fecha, plan, exercise.id, i)} />
+              </View>
             ) : null,
           )}
         </View>
@@ -129,6 +145,7 @@ export function ExerciseCard({ exercise, index, weekIndex, plan, fecha }: Props)
       {currentIndex >= 0 ? (
         <SetRow
           index={currentIndex}
+          total={sets.length}
           set={sets[currentIndex]}
           placeholderKg={getPlaceholderForSet(exerciseDefaults, plan, exercise.id, currentIndex).pesoKg}
           placeholderReps={getPlaceholderForSet(exerciseDefaults, plan, exercise.id, currentIndex).reps}
@@ -138,7 +155,21 @@ export function ExerciseCard({ exercise, index, weekIndex, plan, fecha }: Props)
         />
       ) : null}
 
+      {queuedCount > 0 ? (
+        <Text style={styles.queuedText}>
+          {queuedCount === 1
+            ? '1 serie en cola — aparece al completar la actual'
+            : `${queuedCount} series en cola — aparecen al completar la actual`}
+        </Text>
+      ) : null}
+
       <Button label="+ agregar serie" fullWidth onPress={() => addSet(fecha, plan, exercise.id)} style={styles.addSetButton} />
+
+      {allDone && reviewOpen ? (
+        <PressableScale onPress={() => setReviewOpen(false)} accessibilityLabel="Cerrar revisión">
+          <Text style={styles.closeReviewText}>Cerrar revisión</Text>
+        </PressableScale>
+      ) : null}
     </Card>
   );
 }
@@ -164,10 +195,14 @@ const styles = StyleSheet.create({
   recordRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   recordText: { ...typography.labelSmall, color: colors.caution },
   doneList: { gap: 2 },
-  doneRow: { ...typography.bodySecondary, color: colors.good },
+  doneRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 2 },
+  doneRowText: { ...typography.bodySecondary, color: colors.good },
+  queuedText: { ...typography.labelSmall, color: colors.textSecondary },
   addSetButton: { borderStyle: 'dashed' },
   completedCard: { gap: 4, paddingVertical: spacing.md },
   completedRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   completedName: { ...typography.body },
   completedMeta: { ...typography.bodySecondary },
+  reviewHint: { ...typography.labelSmall, color: colors.textSecondary, marginTop: 2 },
+  closeReviewText: { ...typography.labelSmall, color: colors.accent, textAlign: 'center' },
 });
