@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { CircleCheck, Trophy } from 'lucide-react-native';
 
@@ -8,9 +8,6 @@ import { Card, CardKicker } from '@/components/ui/Card';
 import { Switch } from '@/components/ui/Switch';
 import { TextField } from '@/components/ui/TextField';
 import { Button } from '@/components/ui/Button';
-import { PressableScale } from '@/components/ui/PressableScale';
-import { CheckCircleButton } from '@/components/ui/CheckCircleButton';
-import { SwipeableRow } from '@/components/ui/SwipeableRow';
 import { SetRow } from './SetRow';
 import { useAppStore } from '@/store/appStore';
 import { getExpectedSetCount } from '@/logic/progression';
@@ -27,10 +24,9 @@ type Props = {
 };
 
 /**
- * Sesión activa: en vez de mostrar todas las series de todos los ejercicios a la
- * vez, cada tarjeta se enfoca en la serie actual (con el peso anterior como
- * placeholder y el récord personal a la vista), resume las series ya hechas en una
- * línea, y se colapsa a una tarjeta chica una vez que el ejercicio queda completo.
+ * Todas las series de un ejercicio están siempre visibles y editables (peso, reps,
+ * RIR, hecha/no hecha) — nada se oculta ni se colapsa. Deslizar una serie hacia la
+ * izquierda más de la mitad de la tarjeta la elimina.
  */
 export function ExerciseCard({ exercise, index, weekIndex, plan, fecha }: Props) {
   const updateExercise = useAppStore((s) => s.updateExercise);
@@ -59,48 +55,19 @@ export function ExerciseCard({ exercise, index, weekIndex, plan, fecha }: Props)
 
   const variantEnabled = exercise.variante !== null;
   const allDone = sets.length > 0 && sets.every((s) => s.done);
-  const currentIndex = sets.findIndex((s) => !s.done);
-  const queuedCount = Math.max(0, sets.filter((s) => !s.done).length - 1);
-
-  const [reviewOpen, setReviewOpen] = useState(false);
-
-  useEffect(() => {
-    if (allDone) setReviewOpen(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allDone]);
-
-  if (allDone && !reviewOpen) {
-    const best = sets.reduce<{ pesoKg: number; reps: number } | null>((acc, s) => {
-      if (s.pesoKg === null || s.reps === null) return acc;
-      if (!acc || s.pesoKg > acc.pesoKg) return { pesoKg: s.pesoKg, reps: s.reps };
-      return acc;
-    }, null);
-    return (
-      <PressableScale onPress={() => setReviewOpen(true)} accessibilityLabel="Revisar y corregir series">
-        <Card style={styles.completedCard}>
-          <View style={styles.completedRow}>
-            <CircleCheck size={18} strokeWidth={2} color={colors.good} />
-            <Text style={styles.completedName}>{exercise.nombre}</Text>
-          </View>
-          <Text style={styles.completedMeta}>
-            {sets.length} {sets.length === 1 ? 'serie completada' : 'series completadas'}
-            {best ? ` · Mejor serie de hoy: ${best.pesoKg}kg × ${best.reps}` : ''}
-          </Text>
-          <Text style={styles.reviewHint}>Toca para corregir una serie</Text>
-        </Card>
-      </PressableScale>
-    );
-  }
 
   return (
     <Card style={styles.card}>
       <View style={styles.headerRow}>
         <View style={styles.headerText}>
           <CardKicker>{`Ejercicio ${index + 1}`}</CardKicker>
-          <Text style={styles.name}>{exercise.nombre}</Text>
+          <View style={styles.nameRow}>
+            <Text style={styles.name}>{exercise.nombre}</Text>
+            {allDone ? <CircleCheck size={18} strokeWidth={2} color={colors.good} /> : null}
+          </View>
           <Text style={styles.repRange}>
             {exercise.repMin}–{exercise.repMax} {REP_UNIT_LABELS[exercise.unidad]} · {sets.length}{' '}
-            {sets.length === 1 ? 'serie' : 'series'} en total
+            {sets.length === 1 ? 'serie' : 'series'}
           </Text>
         </View>
         <View style={styles.variantColumn}>
@@ -128,55 +95,27 @@ export function ExerciseCard({ exercise, index, weekIndex, plan, fecha }: Props)
         </View>
       ) : null}
 
-      {sets.some((s) => s.done) ? (
-        <View style={styles.doneList}>
-          {sets.map((set, i) =>
-            set.done ? (
-              <SwipeableRow key={i} onDelete={() => removeSet(fecha, plan, exercise.id, i)}>
-                <View style={styles.doneRow}>
-                  <Text style={styles.doneRowText}>
-                    Serie {i + 1}/{sets.length} — {set.pesoKg ?? '—'}kg × {set.reps ?? '—'}
-                  </Text>
-                  <CheckCircleButton done onPress={() => toggleSetDone(fecha, plan, exercise.id, i)} />
-                </View>
-              </SwipeableRow>
-            ) : null,
-          )}
-        </View>
-      ) : null}
-
-      {currentIndex >= 0 ? (
-        <SetRow
-          index={currentIndex}
-          total={sets.length}
-          set={sets[currentIndex]}
-          placeholderKg={getPlaceholderForSet(exerciseDefaults, plan, exercise.id, currentIndex).pesoKg}
-          placeholderReps={getPlaceholderForSet(exerciseDefaults, plan, exercise.id, currentIndex).reps}
-          onChange={(partial) => setExerciseSet(fecha, plan, exercise.id, currentIndex, partial)}
-          onToggleDone={() => toggleSetDone(fecha, plan, exercise.id, currentIndex)}
-          onDelete={() => removeSet(fecha, plan, exercise.id, currentIndex)}
-        />
-      ) : null}
-
-      {queuedCount > 0 ? (
-        <Text style={styles.queuedText}>
-          {queuedCount === 1
-            ? '1 serie en cola — aparece al completar la actual'
-            : `${queuedCount} series en cola — aparecen al completar la actual`}
-        </Text>
-      ) : null}
+      <View style={styles.setsList}>
+        {sets.map((set, i) => (
+          <SetRow
+            key={i}
+            index={i}
+            total={sets.length}
+            set={set}
+            placeholderKg={getPlaceholderForSet(exerciseDefaults, plan, exercise.id, i).pesoKg}
+            placeholderReps={getPlaceholderForSet(exerciseDefaults, plan, exercise.id, i).reps}
+            onChange={(partial) => setExerciseSet(fecha, plan, exercise.id, i, partial)}
+            onToggleDone={() => toggleSetDone(fecha, plan, exercise.id, i)}
+            onDelete={() => removeSet(fecha, plan, exercise.id, i)}
+          />
+        ))}
+      </View>
 
       {sets.length > 0 ? (
         <Text style={styles.deleteHint}>Desliza una serie hacia la izquierda para eliminarla</Text>
       ) : null}
 
       <Button label="+ agregar serie" fullWidth onPress={() => addSet(fecha, plan, exercise.id)} style={styles.addSetButton} />
-
-      {allDone && reviewOpen ? (
-        <PressableScale onPress={() => setReviewOpen(false)} accessibilityLabel="Cerrar revisión">
-          <Text style={styles.closeReviewText}>Cerrar revisión</Text>
-        </PressableScale>
-      ) : null}
     </Card>
   );
 }
@@ -187,6 +126,7 @@ const styles = StyleSheet.create({
   card: { padding: spacing.lg + 4, gap: spacing.lg },
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', gap: spacing.md },
   headerText: { flex: 1, gap: 4 },
+  nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   name: { ...typography.body, fontFamily: typography.valueLarge.fontFamily, fontSize: 18 },
   repRange: { ...typography.bodySecondary, fontSize: 14 },
   variantColumn: { width: 78, alignItems: 'flex-start', gap: 6 },
@@ -201,16 +141,7 @@ const styles = StyleSheet.create({
   },
   recordRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   recordText: { ...typography.labelSmall, color: colors.caution },
-  doneList: { gap: 2 },
-  doneRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 2 },
-  doneRowText: { ...typography.bodySecondary, color: colors.good },
-  queuedText: { ...typography.labelSmall, color: colors.textSecondary },
+  setsList: { gap: 4 },
   deleteHint: { ...typography.labelSmall, color: colors.textSecondary, textAlign: 'center' },
   addSetButton: { borderStyle: 'dashed' },
-  completedCard: { gap: 4, paddingVertical: spacing.md },
-  completedRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  completedName: { ...typography.body },
-  completedMeta: { ...typography.bodySecondary },
-  reviewHint: { ...typography.labelSmall, color: colors.textSecondary, marginTop: 2 },
-  closeReviewText: { ...typography.labelSmall, color: colors.accent, textAlign: 'center' },
 });

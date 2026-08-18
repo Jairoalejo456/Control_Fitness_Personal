@@ -1,4 +1,4 @@
-import { PropsWithChildren } from 'react';
+import { PropsWithChildren, useRef } from 'react';
 import { Animated, StyleSheet, Text } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
 
@@ -9,23 +9,39 @@ type Props = PropsWithChildren<{
 }>;
 
 export function SwipeableRow({ onDelete, children }: Props) {
+  const ref = useRef<Swipeable>(null);
   return (
     <Swipeable
-      rightThreshold={60}
+      ref={ref}
+      // Sin rightThreshold explícito: como el fondo "Eliminar" ocupa todo el ancho de
+      // la fila (flex: 1), el valor por defecto (mitad del ancho de las acciones) cae
+      // justo en la mitad de la tarjeta, que es el punto de activación pedido.
+      animationOptions={{ bounciness: 8 }}
       onSwipeableOpen={(direction) => {
-        if (direction === 'right') onDelete();
+        if (direction !== 'right') return;
+        // La lista está indexada por posición, no por un id estable de la serie —
+        // al borrar, la siguiente fila hereda esta misma instancia de Swipeable. Sin
+        // cerrarla primero, aparecería ya abierta (mostrando "Eliminar") con el
+        // contenido de la fila que la reemplaza.
+        ref.current?.close();
+        onDelete();
       }}
-      renderRightActions={(_progress, dragX) => <DeleteBackground dragX={dragX} />}
+      renderRightActions={(progress) => <DeleteBackground progress={progress} />}
       overshootRight={false}>
       {children}
     </Swipeable>
   );
 }
 
-function DeleteBackground({ dragX }: { dragX: Animated.AnimatedInterpolation<number> }) {
-  const opacity = dragX.interpolate({
-    inputRange: [-60, 0],
-    outputRange: [1, 0],
+function DeleteBackground({ progress }: { progress: Animated.AnimatedInterpolation<number> }) {
+  // `progress` llega a 1 solo cuando se arrastra el ancho completo de la fila, pero el
+  // punto de activación real (rightThreshold por defecto) es la mitad de ese ancho —
+  // o sea progress = 0.5. Se interpola para que el fondo llegue a opacidad completa
+  // justo ahí, dando una señal visual clara del punto exacto donde se soltaría para
+  // eliminar.
+  const opacity = progress.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [0, 1, 1],
     extrapolate: 'clamp',
   });
   return (
